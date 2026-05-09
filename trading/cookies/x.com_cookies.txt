@@ -1,0 +1,17 @@
+# Netscape HTTP Cookie File
+# https://curl.haxx.se/rfc/cookie_spec.html
+# This is a generated file! Do not edit.
+
+.x.com	TRUE	/	TRUE	1810366918	guest_id	v1%3A177580690720252327
+.x.com	TRUE	/	FALSE	1810378515	__cuid	7abf5ece5a3c437ba0e72639d61e1115
+x.com	FALSE	/	FALSE	1791359222	g_state	{"i_l":0,"i_ll":1775807222672,"i_b":"XEmBo4+vhc2vJqaxkePGLBlLzkc5uJj3djYADQHTJ9k","i_e":{"enable_itp_optimization":0},"i_et":1775807222672}
+.x.com	TRUE	/	TRUE	1810367285	kdt	98taWi3wiBUKKqPAQQplC5fKTNlIezYXZhIUsbkH
+.x.com	TRUE	/	TRUE	1810367285	auth_token	59bad27f6958f8e1ac409e94e67b24022f1d22ee
+.x.com	TRUE	/	TRUE	1810367286	ct0	14da9f4b2216719044cd96d36464041790facf2a3d49015f3d7a3ef32b49e20577d9afb43a9fe72831a3105790f3cd70fa8045904ea7a8ab0d361f4a68ddf1907f2efe98c472c7a5cb8e31d724ff8de7
+.x.com	TRUE	/	TRUE	1775893686	att	1-j2xHGMeuthQ27ktdfUzRygDC5FsIuc86MaG6KgUd
+.x.com	TRUE	/	TRUE	1807354522	twid	u%3D2041806834206470144
+.x.com	TRUE	/	TRUE	1810378518	guest_id_ads	v1%3A177580690720252327
+.x.com	TRUE	/	TRUE	1810378518	guest_id_marketing	v1%3A177580690720252327
+x.com	FALSE	/	FALSE	0	lang	en
+.x.com	TRUE	/	TRUE	1810378514	personalization_id	"v1_8os/H9JBKmmRnr9W7mz1LQ=="
+.x.com	TRUE	/	TRUE	1775820314	__cf_bm	5Qji_T41dRVQk.gv2XnDHtZl61ME1IzUdTUdnopyhHk-1775818502.5253725-1.0.1.1-W_f3SbiK9P7YOej0CGrrJKYbxB2GU16.V.aB0wUABbRKbFc4wyuDAXVjVknnUYHYRelT_KROEItsrH76kfPkog2LcMZ6uYqK6FxJACOpf58kQbcem1AzUBhU4_sL6H2n

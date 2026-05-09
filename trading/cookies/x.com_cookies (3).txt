@@ -1,0 +1,18 @@
+# Netscape HTTP Cookie File
+# https://curl.haxx.se/rfc/cookie_spec.html
+# This is a generated file! Do not edit.
+
+.x.com	TRUE	/	TRUE	1810368084	guest_id	v1%3A177580807229088578
+.x.com	TRUE	/	FALSE	1810378716	__cuid	648460fdc3304d32860ff4fb0e9a192a
+x.com	FALSE	/	FALSE	1791360124	g_state	{"i_l":0,"i_ll":1775808124304,"i_b":"bMseLPjSURKpulp78lQ9Gi6WcmKtzLuPyqLY9yGHCVY","i_e":{"enable_itp_optimization":0},"i_et":1775808124304}
+.x.com	TRUE	/	TRUE	1810368145	kdt	Tv895MPemiRdWxpIpsRvN1OcEWHV3HgLsBuPqPkm
+.x.com	TRUE	/	TRUE	1810368145	auth_token	05906bd3fc450e0ffce0e669e34e0978d73e411e
+.x.com	TRUE	/	TRUE	1810368147	ct0	4517140b6c130441d0a1104060ef55b097acea879f09033a4ad5d4e4f8677413f3d716a370a458838f716ab0bf3b2bfa711640343c28fb5b2cd012e12e428be0dc45bd8d235838b90dc6d2f0ed4ed70e
+.x.com	TRUE	/	TRUE	1775894552	att	1-NhwtkGlIJ4z60Oi3xSjU4qvLYqkiTCaGpecu51Yw
+.x.com	TRUE	/	TRUE	1807354726	twid	u%3D2042208885243547648
+.x.com	TRUE	/	TRUE	1791361527	d_prefs	MToxLGNvbnNlbnRfdmVyc2lvbjoyLHRleHRfdmVyc2lvbjoxMDAw
+.x.com	TRUE	/	TRUE	1810378722	guest_id_ads	v1%3A177580807229088578
+.x.com	TRUE	/	TRUE	1810378722	guest_id_marketing	v1%3A177580807229088578
+.x.com	TRUE	/	TRUE	1810023929	personalization_id	"v1_sx696cxzCqOiTAM3IPWudA=="
+x.com	FALSE	/	FALSE	0	lang	en
+.x.com	TRUE	/	TRUE	1775820514	__cf_bm	jc257ANLA.Juigo.rvixKz9LaOlpoBwEh8O4tf5gI1M-1775818702.7337158-1.0.1.1-Uo7lu9wZfTQOydmQl8sWN_LEmCt6s8DmZ11OTWs.Ekc4w0ThayQk0G1LhckI4_q90KcQqF1NlaDFFN7eYR8OpYbVHPR4FoiDOJSAVmWr16BqEDTRpq.tfS0vZg6HYkS4
