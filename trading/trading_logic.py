@@ -17,16 +17,6 @@ from typing import List, Tuple, Optional
 # ============================================================
 # INSTALL DEPENDENCIES
 # ============================================================
-print("📦 Checking dependencies...")
-try:
-    from bird import TwitterClient
-    print("   ✅ bird library already installed")
-except ImportError:
-    print("   📥 Installing bird library...")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "bird", "-q"])
-    from bird import TwitterClient
-    print("   ✅ bird library installed")
-
 # ============================================================
 # CONFIGURATION
 # ============================================================
