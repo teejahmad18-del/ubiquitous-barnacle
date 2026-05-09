@@ -1,0 +1,507 @@
+================================================================================
+DJANGO PROJECT COMBINED PYTHON FILES
+Project Root: C:\Users\Lenovo Thinkpad X390\Music\tradingbot\tradingbot
+Total Files: 9
+================================================================================
+
+
+================================================================================
+# File 1/9
+# Path: com.py
+# Full Path: C:\Users\Lenovo Thinkpad X390\Music\tradingbot\tradingbot\com.py
+================================================================================
+
+import os
+import fnmatch
+import re
+
+def load_gitignore_patterns(project_root):
+    """
+    Load patterns from .gitignore file if it exists.
+    Returns a list of patterns.
+    """
+    gitignore_path = os.path.join(project_root, '.gitignore')
+    patterns = []
+    
+    if os.path.exists(gitignore_path):
+        with open(gitignore_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                # Skip empty lines and comments
+                if line and not line.startswith('#'):
+                    patterns.append(line)
+    
+    return patterns
+
+def should_exclude(filepath, project_root, gitignore_patterns):
+    """
+    Check if a file should be excluded based on gitignore patterns and common exclusions.
+    """
+    # Convert to relative path for gitignore matching
+    rel_path = os.path.relpath(filepath, project_root).replace('\\', '/')
+    filename = os.path.basename(filepath)
+    
+    # Check against gitignore patterns
+    for pattern in gitignore_patterns:
+        # Handle directory patterns (ending with /)
+        if pattern.endswith('/'):
+            pattern = pattern[:-1]
+            if pattern in rel_path or fnmatch.fnmatch(rel_path, f"*{pattern}*"):
+                return True
+        # Handle file patterns
+        elif fnmatch.fnmatch(filename, pattern) or fnmatch.fnmatch(rel_path, pattern):
+            return True
+    
+    # Common exclusions for Django projects
+    exclude_paths = [
+        '__pycache__',
+        '.pyc',
+        '.pyo',
+        'migrations/',
+        'venv/',
+        'env/',
+        '.env',
+        '.venv/',
+        'node_modules/',
+        '.git/',
+        '.idea/',
+        '.vscode/',
+    ]
+    
+    for exclude in exclude_paths:
+        if exclude in rel_path.replace('\\', '/'):
+            return True
+    
+    # Exclude specific files
+    exclude_files = [
+        '__init__.py',  # Usually empty, comment out if needed
+        'settings.py',  # Contains sensitive data
+        'wsgi.py',
+        'asgi.py',
+        'manage.py',    # Standard boilerplate
+    ]
+    
+    if filename in exclude_files:
+        return True
+    
+    return False
+
+def combine_python_files(project_root, output_file='combine.txt'):
+    """
+    Combine all Python files in the Django project into a single text file.
+    """
+    gitignore_patterns = load_gitignore_patterns(project_root)
+    
+    python_files = []
+    
+    # Walk through the project directory
+    for root, dirs, files in os.walk(project_root):
+        # Skip directories that are commonly excluded
+        dirs_to_remove = set()
+        for d in dirs:
+            if d in ['__pycache__', '.git', 'venv', 'env', '.venv', 'node_modules', '.idea', '.vscode', 'migrations']:
+                dirs_to_remove.add(d)
+        dirs[:] = [d for d in dirs if d not in dirs_to_remove]
+        
+        for file in files:
+            if file.endswith('.py'):
+                filepath = os.path.join(root, file)
+                
+                # Skip if should be excluded
+                if not should_exclude(filepath, project_root, gitignore_patterns):
+                    python_files.append(filepath)
+    
+    # Sort files for consistent output
+    python_files.sort()
+    
+    # Write combined file
+    with open(output_file, 'w', encoding='utf-8') as outfile:
+        outfile.write("=" * 80 + "\n")
+        outfile.write("DJANGO PROJECT COMBINED PYTHON FILES\n")
+        outfile.write(f"Project Root: {project_root}\n")
+        outfile.write(f"Total Files: {len(python_files)}\n")
+        outfile.write("=" * 80 + "\n\n")
+        
+        for i, filepath in enumerate(python_files, 1):
+            rel_path = os.path.relpath(filepath, project_root)
+            
+            try:
+                with open(filepath, 'r', encoding='utf-8') as infile:
+                    content = infile.read()
+                
+                # Skip empty files (optional)
+                if not content.strip():
+                    print(f"[{i}/{len(python_files)}] Skipped (empty): {rel_path}")
+                    continue
+                
+                # Write file separator and header
+                outfile.write("\n" + "=" * 80 + "\n")
+                outfile.write(f"# File {i}/{len(python_files)}\n")
+                outfile.write(f"# Path: {rel_path}\n")
+                outfile.write(f"# Full Path: {filepath}\n")
+                outfile.write("=" * 80 + "\n\n")
+                
+                # Write file content
+                outfile.write(content)
+                outfile.write("\n\n")
+                
+                print(f"[{i}/{len(python_files)}] Added: {rel_path}")
+                
+            except Exception as e:
+                outfile.write(f"\n# ERROR: Could not read file: {rel_path}\n")
+                outfile.write(f"# Error: {str(e)}\n\n")
+                print(f"Error reading {rel_path}: {e}")
+    
+    print(f"\n✓ Successfully combined {len(python_files)} Python files into {output_file}")
+    return len(python_files)
+
+if __name__ == "__main__":
+    # Set your project root path
+    PROJECT_ROOT = r"C:\Users\Lenovo Thinkpad X390\Music\tradingbot\tradingbot"
+    
+    # Output file path (will be created in the project root)
+    output_path = os.path.join(PROJECT_ROOT, 'combine.txt')
+    
+    # Run the combination
+    combine_python_files(PROJECT_ROOT, output_path)
+    
+    print(f"Output file created at: {output_path}")
+
+
+================================================================================
+# File 2/9
+# Path: trading\admin.py
+# Full Path: C:\Users\Lenovo Thinkpad X390\Music\tradingbot\tradingbot\trading\admin.py
+================================================================================
+
+from django.contrib import admin
+
+# Register your models here.
+
+
+
+================================================================================
+# File 3/9
+# Path: trading\apps.py
+# Full Path: C:\Users\Lenovo Thinkpad X390\Music\tradingbot\tradingbot\trading\apps.py
+================================================================================
+
+from django.apps import AppConfig
+
+
+class TradingConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'trading'
+
+
+
+================================================================================
+# File 4/9
+# Path: trading\models.py
+# Full Path: C:\Users\Lenovo Thinkpad X390\Music\tradingbot\tradingbot\trading\models.py
+================================================================================
+
+from django.db import models
+
+# Create your models here.
+
+
+
+================================================================================
+# File 5/9
+# Path: trading\tests.py
+# Full Path: C:\Users\Lenovo Thinkpad X390\Music\tradingbot\tradingbot\trading\tests.py
+================================================================================
+
+from django.test import TestCase
+
+# Create your tests here.
+
+
+
+================================================================================
+# File 6/9
+# Path: trading\trading_logic.py
+# Full Path: C:\Users\Lenovo Thinkpad X390\Music\tradingbot\tradingbot\trading\trading_logic.py
+================================================================================
+
+from urllib.request import Request, urlopen
+from bs4 import BeautifulSoup
+from datetime import datetime
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import urllib.error
+
+# Email configuration
+SENDER_EMAIL = "dahmadu071@gmail.com"
+RECIPIENT_EMAILS = ["teejeedeeone@gmail.com"]
+EMAIL_PASSWORD = "oase wivf hvqn lyhr"
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+
+def send_email_notification(new_numbers):
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SENDER_EMAIL
+        msg['To'] = ", ".join(RECIPIENT_EMAILS)
+        msg['Subject'] = f"New Temporary Numbers Available ({len(new_numbers)} found)"
+
+        body = "New temporary phone numbers were just posted:\n\n"
+        for number in new_numbers:
+            body += f"📱 Phone: {number['phone_number']}\n"
+            body += f"⏰ Posted: {number['time_posted']}\n"
+            body += f"🔗 Link: https://temp-number.com/temporary-numbers/United-States/{number['phone_number']}/1\n"
+            body += "-"*50 + "\n"
+
+        body += "\nThis notification was sent because these numbers were posted within the last 5 minutes."
+        msg.attach(MIMEText(body, 'plain'))
+
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls()
+            server.login(SENDER_EMAIL, EMAIL_PASSWORD)
+            server.sendmail(SENDER_EMAIL, RECIPIENT_EMAILS, msg.as_string())
+
+        print(f"Email notification sent for {len(new_numbers)} new number(s)")
+        return True
+
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return False
+
+def get_phone_numbers(url):
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Connection': 'keep-alive'
+        }
+
+        req = Request(url, headers=headers)
+        response = urlopen(req, timeout=10)
+        html_content = response.read().decode('utf-8')
+
+        soup = BeautifulSoup(html_content, 'html.parser')
+        phone_entries = []
+        country_boxes = soup.find_all('div', class_='country-box')
+
+        for box in country_boxes:
+            try:
+                phone_number = box.find('h4', class_='card-title').text.strip()
+                time_text = box.find('div', class_='add_time-top').text.strip()
+
+                phone_entries.append({
+                    'phone_number': phone_number,
+                    'time_posted': time_text
+                })
+            except AttributeError:
+                continue
+
+        return phone_entries
+
+    except urllib.error.URLError as e:
+        print(f"Error fetching the URL: {e.reason}")
+        return []
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return []
+
+def check_for_new_numbers():
+    url = 'https://temp-number.com/countries/United-States'
+    print(f"Checking for new numbers at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+    phone_numbers = get_phone_numbers(url)
+    new_numbers = []
+
+    for number in phone_numbers:
+        time_text = number['time_posted'].lower()
+        if 'minute' in time_text:
+            minutes_ago = int(time_text.split()[0])
+            if minutes_ago <= 5:
+                new_numbers.append(number)
+        elif 'second' in time_text:  # In case any are posted seconds ago
+            new_numbers.append(number)
+
+    if new_numbers:
+        print(f"Found {len(new_numbers)} new number(s) posted within last 5 minutes")
+        return send_email_notification(new_numbers)
+    else:
+        print("No new numbers found in the last 5 minutes")
+        return False
+
+if __name__ == "__main__":
+    check_for_new_numbers()
+
+
+
+================================================================================
+# File 7/9
+# Path: trading\urls.py
+# Full Path: C:\Users\Lenovo Thinkpad X390\Music\tradingbot\tradingbot\trading\urls.py
+================================================================================
+
+from django.urls import path
+from .views import trigger_bot, get_output, bot_status  # Updated import
+
+urlpatterns = [
+    path('run/', trigger_bot, name='run_bot'),
+    path('output/', get_output, name='bot_output'),  # Now matches view name
+    path('status/', bot_status, name='bot_status'),
+]
+
+
+================================================================================
+# File 8/9
+# Path: trading\views.py
+# Full Path: C:\Users\Lenovo Thinkpad X390\Music\tradingbot\tradingbot\trading\views.py
+================================================================================
+
+import os
+from django.http import HttpResponse, JsonResponse
+import threading
+import time
+import importlib
+import sys
+from io import StringIO
+
+# Persistent storage files
+STATE_FILE = os.path.join(os.path.dirname(__file__), 'bot_state.json')
+OUTPUT_FILE = os.path.join(os.path.dirname(__file__), 'bot_output.txt')
+
+# Initialize bot state
+bot_state = {
+    "is_running": False,
+    "last_run": None,
+    "output": "",
+    "status": "idle",
+    "execution_time": 0
+}
+
+def _load_state():
+    """Load persisted state from file"""
+    if os.path.exists(STATE_FILE):
+        try:
+            with open(STATE_FILE, 'r') as f:
+                return eval(f.read())
+        except:
+            pass
+    return bot_state
+
+def _save_state():
+    """Save current state to file"""
+    with open(STATE_FILE, 'w') as f:
+        f.write(str(bot_state))
+
+def _save_output(content):
+    """Save output to persistent file"""
+    with open(OUTPUT_FILE, 'w') as f:
+        f.write(content)
+
+def _load_output():
+    """Load output from persistent file"""
+    if os.path.exists(OUTPUT_FILE):
+        with open(OUTPUT_FILE, 'r') as f:
+            return f.read()
+    return "No output available yet"
+
+# Load initial state
+bot_state.update(_load_state())
+bot_state['output'] = _load_output()
+
+def trigger_bot(request):
+    if bot_state["is_running"]:
+        return HttpResponse(
+            f"Bot is already running\n\nLast output:\n{bot_state['output']}",
+            content_type="text/plain"
+        )
+    
+    # Setup output capture
+    output_buffer = StringIO()
+    sys.stdout = output_buffer
+    sys.stderr = output_buffer
+    
+    def run_script():
+        global bot_state
+        start_time = time.time()
+        
+        try:
+            # Initialize state
+            bot_state.update({
+                "is_running": True,
+                "status": "running",
+                "output": "",
+                "start_time": time.strftime("%Y-%m-%d %H:%M:%S")
+            })
+            _save_state()
+            
+            # Execute trading script
+            trading = importlib.import_module('trading.trading_logic')
+            
+            if hasattr(trading, '__main__'):
+                trading.__main__()
+            else:
+                with open(os.path.join(os.path.dirname(__file__), 'trading_logic.py'), 'r') as f:
+                    exec(f.read(), {'__name__': '__main__'})
+            
+            bot_state["status"] = "completed"
+            
+        except Exception as e:
+            bot_state["status"] = f"error: {str(e)}"
+            print(f"ERROR: {str(e)}")
+            
+        finally:
+            # Capture and save all output
+            output_content = output_buffer.getvalue()
+            _save_output(output_content)
+            
+            bot_state.update({
+                "is_running": False,
+                "last_run": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "output": output_content,
+                "execution_time": round(time.time() - start_time, 2)
+            })
+            _save_state()
+            
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+    
+    # Start execution thread
+    thread = threading.Thread(target=run_script)
+    thread.daemon = True
+    thread.start()
+    
+    return HttpResponse(
+        "Trading bot started successfully\nRefresh /output/ to see results",
+        content_type="text/plain"
+    )
+
+def get_output(request):  # Changed from bot_output to get_output
+    """View the current output (renamed to match import)"""
+    current_output = _load_output()
+    
+    response = (
+        f"Status: {bot_state['status']}\n"
+        f"Last run: {bot_state['last_run'] or 'Never'}\n"
+        f"Running: {bot_state['is_running']}\n"
+        f"Execution time: {bot_state.get('execution_time', 0)}s\n\n"
+        f"Output:\n{current_output}"
+    )
+    return HttpResponse(response, content_type="text/plain")
+
+def bot_status(request):
+    return JsonResponse(bot_state)
+
+
+================================================================================
+# File 9/9
+# Path: tradingbot\urls.py
+# Full Path: C:\Users\Lenovo Thinkpad X390\Music\tradingbot\tradingbot\tradingbot\urls.py
+================================================================================
+
+from django.urls import path, include
+
+urlpatterns = [
+    path('', include('trading.urls')),
+]
+
