@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CT Viral Intelligence Engine</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #020810;
+      --surface: #050f1e;
+      --panel: #071628;
+      --accent: #00f0ff;
+      --accent2: #ff2d6b;
+      --accent3: #a259ff;
+      --green: #00ff88;
+      --text: #c8e6ff;
+      --muted: #4a7ea0;
+      --glow: 0 0 20px rgba(0, 240, 255, 0.4);
+      --glow2: 0 0 20px rgba(255, 45, 107, 0.4);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridScroll 20s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes gridScroll {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(40px, 40px); }
+    }
+
+    /* Scan line effect */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 32px;
+      border: 1px solid rgba(0,240,255,0.2);
+      background: linear-gradient(135deg, rgba(0,240,255,0.05), rgba(5,15,30,0.9));
+      backdrop-filter: blur(10px);
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeDown 0.8s ease forwards;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--accent3), var(--accent2), transparent);
+      animation: scan 3s linear infinite;
+    }
+
+    @keyframes scan {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-icon {
+      width: 48px; height: 48px;
+      border: 2px solid var(--accent);
+      display: grid;
+      place-items: center;
+      position: relative;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .logo-icon::before {
+      content: '◈';
+      font-size: 24px;
+      color: var(--accent);
+      text-shadow: var(--glow);
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: var(--glow); }
+      50% { box-shadow: 0 0 40px rgba(0,240,255,0.7); }
+    }
+
+    .logo-text h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--accent);
+      text-shadow: var(--glow);
+      letter-spacing: 3px;
+    }
+
+    .logo-text p {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--green);
+    }
+
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: blink 1.4s ease-in-out infinite;
+      box-shadow: 0 0 8px var(--green);
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    /* ── METRIC CARDS ── */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .metric-card {
+      border: 1px solid rgba(0,240,255,0.15);
+      background: var(--panel);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.6s ease forwards;
+      animation-fill-mode: both;
+    }
+
+    .metric-card:nth-child(1) { animation-delay: 0.1s; border-color: rgba(0,240,255,0.25); }
+    .metric-card:nth-child(2) { animation-delay: 0.2s; border-color: rgba(255,45,107,0.25); }
+    .metric-card:nth-child(3) { animation-delay: 0.3s; border-color: rgba(162,89,255,0.25); }
+    .metric-card:nth-child(4) { animation-delay: 0.4s; border-color: rgba(0,255,136,0.25); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .metric-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+    }
+    .metric-card:nth-child(1)::after { background: var(--accent); }
+    .metric-card:nth-child(2)::after { background: var(--accent2); }
+    .metric-card:nth-child(3)::after { background: var(--accent3); }
+    .metric-card:nth-child(4)::after { background: var(--green); }
+
+    .metric-label {
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .metric-value {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .metric-card:nth-child(1) .metric-value { color: var(--accent); text-shadow: var(--glow); }
+    .metric-card:nth-child(2) .metric-value { color: var(--accent2); text-shadow: var(--glow2); }
+    .metric-card:nth-child(3) .metric-value { color: var(--accent3); }
+    .metric-card:nth-child(4) .metric-value { color: var(--green); }
+
+    .metric-delta {
+      font-size: 11px;
+      margin-top: 8px;
+    }
+    .delta-up { color: var(--green); }
+    .delta-down { color: var(--accent2); }
+
+    /* ── MAIN GRID ── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    /* ── PANEL BASE ── */
+    .panel {
+      border: 1px solid rgba(0,240,255,0.12);
+      background: var(--panel);
+      animation: fadeUp 0.6s ease forwards;
+      animation-fill-mode: both;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(0,240,255,0.1);
+    }
+
+    .panel-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--accent);
+    }
+
+    .panel-badge {
+      font-size: 10px;
+      padding: 3px 10px;
+      border: 1px solid currentColor;
+      letter-spacing: 2px;
+    }
+
+    .badge-live { color: var(--accent2); animation: blink 1.4s ease-in-out infinite; }
+    .badge-ok   { color: var(--green); }
+
+    /* ── VIRAL FEED ── */
+    .feed-list { padding: 12px 0; }
+
+    .feed-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(0,240,255,0.06);
+      transition: background 0.2s;
+      cursor: pointer;
+      animation: fadeUp 0.5s ease forwards;
+      animation-fill-mode: both;
+    }
+
+    .feed-item:hover { background: rgba(0,240,255,0.04); }
+
+    .feed-item:nth-child(1) { animation-delay: 0.2s; }
+    .feed-item:nth-child(2) { animation-delay: 0.3s; }
+    .feed-item:nth-child(3) { animation-delay: 0.4s; }
+    .feed-item:nth-child(4) { animation-delay: 0.5s; }
+    .feed-item:nth-child(5) { animation-delay: 0.6s; }
+
+    .feed-rank {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      font-weight: 900;
+      color: rgba(0,240,255,0.2);
+      min-width: 36px;
+      line-height: 1;
+      padding-top: 2px;
+    }
+
+    .feed-item:nth-child(1) .feed-rank { color: var(--accent); text-shadow: var(--glow); }
+    .feed-item:nth-child(2) .feed-rank { color: rgba(0,240,255,0.6); }
+
+    .feed-content { flex: 1; }
+
+    .feed-title {
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .feed-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .tag {
+      padding: 2px 8px;
+      border: 1px solid;
+      font-size: 9px;
+      letter-spacing: 1px;
+    }
+
+    .tag-tech    { color: var(--accent);  border-color: rgba(0,240,255,0.3); }
+    .tag-health  { color: var(--green);   border-color: rgba(0,255,136,0.3); }
+    .tag-finance { color: var(--accent3); border-color: rgba(162,89,255,0.3); }
+    .tag-social  { color: var(--accent2); border-color: rgba(255,45,107,0.3); }
+
+    .feed-score {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      min-width: 60px;
+    }
+
+    .score-val {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      color: var(--accent);
+    }
+
+    .score-bar {
+      width: 60px; height: 3px;
+      background: rgba(0,240,255,0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .score-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent3), var(--accent));
+      border-radius: 2px;
+      animation: growBar 1.2s ease forwards;
+    }
+
+    @keyframes growBar {
+      from { width: 0%; }
+    }
+
+    /* ── SIGNAL PANEL ── */
+    .signal-list { padding: 12px 0; }
+
+    .signal-item {
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(0,240,255,0.06);
+      animation: fadeUp 0.5s ease forwards;
+      animation-fill-mode: both;
+    }
+
+    .signal-item:nth-child(1) { animation-delay: 0.2s; }
+    .signal-item:nth-child(2) { animation-delay: 0.3s; }
+    .signal-item:nth-child(3) { animation-delay: 0.4s; }
+    .signal-item:nth-child(4) { animation-delay: 0.5s; }
+
+    .signal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .signal-name {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--text);
+    }
+
+    .signal-pct {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+    }
+
+    .signal-bar-bg {
+      height: 4px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .signal-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      animation: growBar 1.4s ease forwards;
+    }
+
+    /* ── BOTTOM ROW ── */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 24px;
+    }
+
+    /* ── SOURCE TABLE ── */
+    .source-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .source-table th {
+      text-align: left;
+      padding: 8px 16px;
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      border-bottom: 1px solid rgba(0,240,255,0.1);
+      background: rgba(0,240,255,0.03);
+    }
+    .source-table td {
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(0,240,255,0.05);
+      color: var(--text);
+    }
+    .source-table tr:hover td { background: rgba(0,240,255,0.03); }
+    .src-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 8px; }
+
+    /* ── ACTIVITY CHART ── */
+    .chart-area {
+      padding: 20px;
+      height: 180px;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .bar-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      height: 100%;
+      justify-content: flex-end;
+    }
+
+    .bar {
+      width: 100%;
+      border-radius: 2px 2px 0 0;
+      animation: growUp 1s ease forwards;
+      animation-fill-mode: both;
+    }
+
+    @keyframes growUp {
+      from { transform: scaleY(0); transform-origin: bottom; }
+      to   { transform: scaleY(1); transform-origin: bottom; }
+    }
+
+    .bar-primary   { background: linear-gradient(to top, var(--accent3), var(--accent)); }
+    .bar-secondary { background: rgba(0,240,255,0.15); }
+
+    .bar-label {
+      font-size: 8px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+
+    /* ── TREND KEYWORDS ── */
+    .keywords { padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .keyword {
+      padding: 6px 14px;
+      border: 1px solid;
+      font-size: 10px;
+      letter-spacing: 1px;
+      cursor: default;
+      transition: all 0.2s;
+      animation: fadeUp 0.5s ease forwards;
+      animation-fill-mode: both;
+    }
+
+    .keyword:hover { transform: translateY(-2px); }
+
+    .kw-1 { color: var(--accent);  border-color: rgba(0,240,255,0.4);   background: rgba(0,240,255,0.05); }
+    .kw-2 { color: var(--accent2); border-color: rgba(255,45,107,0.4);  background: rgba(255,45,107,0.05); }
+    .kw-3 { color: var(--accent3); border-color: rgba(162,89,255,0.4);  background: rgba(162,89,255,0.05); }
+    .kw-4 { color: var(--green);   border-color: rgba(0,255,136,0.4);   background: rgba(0,255,136,0.05); }
+
+    /* ── FOOTER ── */
+    footer {
+      margin-top: 32px;
+      padding: 16px 0;
+      border-top: 1px solid rgba(0,240,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 2px;
+    }
+
+    /* ── TICKER ── */
+    .ticker-wrap {
+      overflow: hidden;
+      border: 1px solid rgba(0,240,255,0.12);
+      background: rgba(0,240,255,0.03);
+      padding: 8px 0;
+      margin-bottom: 24px;
+    }
+
+    .ticker {
+      display: flex;
+      white-space: nowrap;
+      animation: ticker 30s linear infinite;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .ticker span { padding: 0 40px; }
+    .ticker .hi { color: var(--accent); }
+
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon"></div>
+      <div class="logo-text">
+        <h1>CT VIRAL INTELLIGENCE</h1>
+        <p>Real-time Content Tracking Engine · v4.2.1</p>
+      </div>
+    </div>
+    <div class="header-status">
+      <div class="dot"></div>
+      LIVE · 14,382 SIGNALS ACTIVE · LAST SYNC 00:03s AGO
+    </div>
+  </header>
+
+  <!-- TICKER -->
+  <div class="ticker-wrap">
+    <div class="ticker">
+      <span>AI SURGE <span class="hi">+284%</span></span>
+      <span>CRYPTO VOLATILITY <span class="hi">▲ HIGH</span></span>
+      <span>BIOTECH WATCH <span class="hi">+67%</span></span>
+      <span>TRENDING: #QUANTUMLEAP</span>
+      <span>SENTIMENT SHIFT DETECTED · SECTOR: ENERGY</span>
+      <span>VIRAL THRESHOLD BREACHED · 3 TOPICS</span>
+      <span>AI SURGE <span class="hi">+284%</span></span>
+      <span>CRYPTO VOLATILITY <span class="hi">▲ HIGH</span></span>
+      <span>BIOTECH WATCH <span class="hi">+67%</span></span>
+      <span>TRENDING: #QUANTUMLEAP</span>
+      <span>SENTIMENT SHIFT DETECTED · SECTOR: ENERGY</span>
+      <span>VIRAL THRESHOLD BREACHED · 3 TOPICS</span>
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="metrics">
+    <div class="metric-card">
+      <div class="metric-label">Viral Index</div>
+      <div class="metric-value">94.7</div>
+      <div class="metric-delta delta-up">▲ +12.3 vs 24h avg</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Topics Tracked</div>
+      <div class="metric-value">3,841</div>
+      <div class="metric-delta delta-up">▲ +241 new today</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Sentiment Score</div>
+      <div class="metric-value">0.68</div>
+      <div class="metric-delta delta-down">▼ -0.04 shift</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Sources Online</div>
+      <div class="metric-value">1,209</div>
+      <div class="metric-delta delta-up">▲ 99.8% uptime</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- VIRAL FEED -->
+    <div class="panel" style="animation-delay:0.2s">
+      <div class="panel-header">
+        <div class="panel-title">VIRAL CONTENT FEED</div>
+        <div class="panel-badge badge-live">● LIVE</div>
+      </div>
+      <div class="feed-list">
+
+        <div class="feed-item">
+          <div class="feed-rank">01</div>
+          <div class="feed-content">
+            <div class="feed-title">Breakthrough AI model achieves human-level reasoning across 47 domains simultaneously</div>
+            <div class="feed-meta">
+              <span class="tag tag-tech">TECH</span>
+              <span>Reuters · 14m ago</span>
+              <span>↑ 48,200 shares</span>
+            </div>
+          </div>
+          <div class="feed-score">
+            <div class="score-val">98.2</div>
+            <div class="score-bar"><div class="score-fill" style="width:98%"></div></div>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="feed-rank">02</div>
+          <div class="feed-content">
+            <div class="feed-title">Central banks signal coordinated pivot — markets respond with record single-day gains</div>
+            <div class="feed-meta">
+              <span class="tag tag-finance">FINANCE</span>
+              <span>Bloomberg · 31m ago</span>
+              <span>↑ 31,540 shares</span>
+            </div>
+          </div>
+          <div class="feed-score">
+            <div class="score-val">91.4</div>
+            <div class="score-bar"><div class="score-fill" style="width:91%"></div></div>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="feed-rank">03</div>
+          <div class="feed-content">
+            <div class="feed-title">mRNA vaccine platform shows 94% efficacy against novel pathogen in Phase III trial</div>
+            <div class="feed-meta">
+              <span class="tag tag-health">HEALTH</span>
+              <span>Nature · 1h ago</span>
+              <span>↑ 27,910 shares</span>
+            </div>
+          </div>
+          <div class="feed-score">
+            <div class="score-val">87.0</div>
+            <div class="score-bar"><div class="score-fill" style="width:87%"></div></div>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="feed-rank">04</div>
+          <div class="feed-content">
+            <div class="feed-title">Social media platform implements algorithmic transparency tool amid global regulatory pressure</div>
+            <div class="feed-meta">
+              <span class="tag tag-social">SOCIAL</span>
+              <span>TechCrunch · 2h ago</span>
+              <span>↑ 19,330 shares</span>
+            </div>
+          </div>
+          <div class="feed-score">
+            <div class="score-val">79.5</div>
+            <div class="score-bar"><div class="score-fill" style="width:79%"></div></div>
+          </div>
+        </div>
+
+        <div class="feed-item">
+          <div class="feed-rank">05</div>
+          <div class="feed-content">
+            <div class="feed-title">Quantum computing startup claims first practical 1,000-qubit commercial demonstration</div>
+            <div class="feed-meta">
+              <span class="tag tag-tech">TECH</span>
+              <span>MIT Tech Review · 3h ago</span>
+              <span>↑ 15,780 shares</span>
+            </div>
+          </div>
+          <div class="feed-score">
+            <div class="score-val">73.1</div>
+            <div class="score-bar"><div class="score-fill" style="width:73%"></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SIGNAL STRENGTH -->
+    <div class="panel" style="animation-delay:0.3s">
+      <div class="panel-header">
+        <div class="panel-title">SIGNAL STRENGTH</div>
+        <div class="panel-badge badge-ok">NOMINAL</div>
+      </div>
+      <div class="signal-list">
+
+        <div class="signal-item">
+          <div class="signal-header">
+            <div class="signal-name">ENGAGEMENT VELOCITY</div>
+            <div class="signal-pct" style="color:var(--accent)">92%</div>
+          </div>
+          <div class="signal-bar-bg">
+            <div class="signal-bar-fill" style="width:92%; background:linear-gradient(90deg,var(--accent3),var(--accent))"></div>
+          </div>
+        </div>
+
+        <div class="signal-item">
+          <div class="signal-header">
+            <div class="signal-name">SENTIMENT POLARITY</div>
+            <div class="signal-pct" style="color:var(--green)">68%</div>
+          </div>
+          <div class="signal-bar-bg">
+            <div class="signal-bar-fill" style="width:68%; background:linear-gradient(90deg,#007a45,var(--green))"></div>
+          </div>
+        </div>
+
+        <div class="signal-item">
+          <div class="signal-header">
+            <div class="signal-name">CROSS-PLATFORM SPREAD</div>
+            <div class="signal-pct" style="color:var(--accent3)">84%</div>
+          </div>
+          <div class="signal-bar-bg">
+            <div class="signal-bar-fill" style="width:84%; background:linear-gradient(90deg,#4a0099,var(--accent3))"></div>
+          </div>
+        </div>
+
+        <div class="signal-item">
+          <div class="signal-header">
+            <div class="signal-name">BOT NOISE FILTER</div>
+            <div class="signal-pct" style="color:var(--accent2)">77%</div>
+          </div>
+          <div class="signal-bar-bg">
+            <div class="signal-bar-fill" style="width:77%; background:linear-gradient(90deg,#8b0030,var(--accent2))"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM GRID -->
+  <div class="bottom-grid">
+
+    <!-- SOURCES -->
+    <div class="panel" style="animation-delay:0.4s">
+      <div class="panel-header">
+        <div class="panel-title">DATA SOURCES</div>
+      </div>
+      <table class="source-table">
+        <thead>
+          <tr>
+            <th>SOURCE</th>
+            <th>TOPICS</th>
+            <th>STATUS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="src-dot" style="background:var(--accent)"></span>Social APIs</td>
+            <td>1,402</td>
+            <td style="color:var(--green)">ONLINE</td>
+          </tr>
+          <tr>
+            <td><span class="src-dot" style="background:var(--accent3)"></span>News Wires</td>
+            <td>893</td>
+            <td style="color:var(--green)">ONLINE</td>
+          </tr>
+          <tr>
+            <td><span class="src-dot" style="background:var(--accent2)"></span>Blogs & Forums</td>
+            <td>741</td>
+            <td style="color:var(--green)">ONLINE</td>
+          </tr>
+          <tr>
+            <td><span class="src-dot" style="background:var(--green)"></span>Research DB</td>
+            <td>512</td>
+            <td style="color:var(--green)">ONLINE</td>
+          </tr>
+          <tr>
+            <td><span class="src-dot" style="background:var(--muted)"></span>Podcasts</td>
+            <td>293</td>
+            <td style="color:var(--accent2)">SYNC</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ACTIVITY CHART -->
+    <div class="panel" style="animation-delay:0.5s">
+      <div class="panel-header">
+        <div class="panel-title">24H ACTIVITY</div>
+      </div>
+      <div class="chart-area">
+        <div class="bar-group" style="animation-delay:0.1s">
+          <div class="bar bar-secondary" style="height:35%"></div>
+          <div class="bar bar-primary" style="height:20%; animation-delay:0.1s"></div>
+          <div class="bar-label">00</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar bar-secondary" style="height:28%"></div>
+          <div class="bar bar-primary" style="height:15%; animation-delay:0.15s"></div>
+          <div class="bar-label">03</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar bar-secondary" style="height:40%"></div>
+          <div class="bar bar-primary" style="height:25%; animation-delay:0.2s"></div>
+          <div class="bar-label">06</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar bar-secondary" style="height:60%"></div>
+          <div class="bar bar-primary" style="height:38%; animation-delay:0.25s"></div>
+          <div class="bar-label">09</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar bar-secondary" style="height:85%"></div>
+          <div class="bar bar-primary" style="height:55%; animation-delay:0.3s"></div>
+          <div class="bar-label">12</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar bar-secondary" style="height:75%"></div>
+          <div class="bar bar-primary" style="height:48%; animation-delay:0.35s"></div>
+          <div class="bar-label">15</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar bar-secondary" style="height:90%"></div>
+          <div class="bar bar-primary" style="height:70%; animation-delay:0.4s"></div>
+          <div class="bar-label">18</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar bar-secondary" style="height:100%"></div>
+          <div class="bar bar-primary" style="height:82%; animation-delay:0.45s"></div>
+          <div class="bar-label">21</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KEYWORDS -->
+    <div class="panel" style="animation-delay:0.6s">
+      <div class="panel-header">
+        <div class="panel-title">TRENDING KEYWORDS</div>
+      </div>
+      <div class="keywords">
+        <div class="keyword kw-1" style="animation-delay:0.1s">#AIBreakthrough</div>
+        <div class="keyword kw-2" style="animation-delay:0.15s">#MarketPivot</div>
+        <div class="keyword kw-3" style="animation-delay:0.2s">#QuantumLeap</div>
+        <div class="keyword kw-4" style="animation-delay:0.25s">#BiotechWave</div>
+        <div class="keyword kw-1" style="animation-delay:0.3s">#DeepFake</div>
+        <div class="keyword kw-2" style="animation-delay:0.35s">#CryptoSurge</div>
+        <div class="keyword kw-3" style="animation-delay:0.4s">#NeuralNet</div>
+        <div class="keyword kw-4" style="animation-delay:0.45s">#ClimateShift</div>
+        <div class="keyword kw-1" style="animation-delay:0.5s">#DataPrivacy</div>
+        <div class="keyword kw-2" style="animation-delay:0.55s">#VoiceClone</div>
+        <div class="keyword kw-3" style="animation-delay:0.6s">#EdgeAI</div>
+        <div class="keyword kw-4" style="animation-delay:0.65s">#BioSynth</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span>CT VIRAL INTELLIGENCE ENGINE · BUILD 4.2.1.0526</span>
+    <span>ALL DATA SIMULATED FOR DEMONSTRATION</span>
+    <span>© 2026 CT INTELLIGENCE SYSTEMS</span>
+  </footer>
+
+</div>
+</body>
+</html>
