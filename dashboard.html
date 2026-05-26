@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Twitter Viral Intelligence Engine</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', monospace; min-height: 100vh; }
+
+  /* NAV */
+  #nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: #0a0a0a; border-bottom: 1px solid #2e2e2e; display: flex; gap: 2px; padding: 10px 16px; overflow-x: auto; }
+  .tab-btn { background: #141414; border: 1px solid #2e2e2e; color: #888; font-family: 'Courier New', monospace; font-size: 11px; padding: 6px 14px; cursor: pointer; white-space: nowrap; text-transform: uppercase; letter-spacing: 1px; transition: all 0.15s; }
+  .tab-btn:hover { background: #1e1e1e; color: #ffc400; }
+  .tab-btn.active { background: #1e1e1e; color: #ff3d00; border-color: #ff3d00; }
+
+  /* SECTIONS */
+  .section { display: none; padding: 80px 20px 40px; max-width: 900px; margin: 0 auto; }
+  .section.active { display: block; }
+
+  /* CARDS */
+  .card { background: #141414; border: 1px solid #2e2e2e; padding: 18px 20px; margin-bottom: 14px; }
+  .card.tier-s { border-left: 3px solid #ff3d00; }
+  .card.tier-a { border-left: 3px solid #ffc400; }
+  .card.tier-b { border-left: 3px solid #00e5ff; }
+  .card.reply-card { border-left: 3px solid #00e5ff; }
+  .card.qt-card { border-left: 3px solid #ffc400; }
+
+  /* BADGES */
+  .badge { display: inline-block; font-size: 10px; font-weight: bold; padding: 2px 8px; letter-spacing: 1px; margin-right: 6px; }
+  .badge-s { background: #ff3d00; color: #fff; }
+  .badge-a { background: #ffc400; color: #000; }
+  .badge-b { background: #00e5ff; color: #000; }
+  .badge-real { background: #0d2c0d; color: #4caf50; border: 1px solid #2e4a2e; }
+  .badge-ai { background: #2c0d0d; color: #f44336; border: 1px solid #4a2e2e; }
+
+  /* PILLS */
+  .pill { display: inline-block; background: #1e1e1e; border: 1px solid #2e2e2e; color: #ffc400; font-size: 11px; padding: 2px 8px; margin: 2px; }
+  .pill-cyan { background: #001a1e; border-color: #004d5a; color: #00e5ff; }
+  .score-pill { background: #1a1a1a; border: 1px solid #2e2e2e; color: #ffc400; font-size: 11px; padding: 3px 10px; margin-right: 6px; }
+
+  /* TEXT */
+  h2 { color: #ff3d00; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; border-bottom: 1px solid #2e2e2e; padding-bottom: 8px; }
+  h3 { color: #00e5ff; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .pattern-name { color: #fff; font-size: 15px; font-weight: bold; margin-bottom: 4px; }
+  .muted { color: #666; font-size: 12px; line-height: 1.6; }
+  .label { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0 4px; }
+
+  /* POST TEXT */
+  .post-text { font-size: 14px; line-height: 1.75; white-space: pre-wrap; color: #ddd; margin-bottom: 12px; }
+
+  /* IMAGE BLOCKS */
+  .img-real { background: #0a1f0a; border: 1px solid #1e3a1e; color: #4caf50; font-size: 12px; padding: 10px 14px; margin-top: 10px; }
+  .img-ai { background: #1f0a0a; border: 1px solid #3a1e1e; color: #f44336; font-size: 12px; padding: 10px 14px; margin-top: 10px; font-style: italic; }
+
+  /* COPY BUTTONS */
+  .copy-toolbar { display: flex; gap: 6px; flex-wrap: nowrap; margin-bottom: 10px; }
+  .copy-btn { background: #1e1e1e; border: 1px solid #2e2e2e; color: #888; font-family: 'Courier New', monospace; font-size: 11px; padding: 4px 10px; cursor: pointer; white-space: nowrap; text-transform: uppercase; transition: all 0.15s; }
+  .copy-btn:hover { background: #2a2a2a; color: #ffc400; }
+  .copy-btn.copied { background: #0d1a0d; border-color: #2e4a2e; color: #5dba5d; }
+  .bulk-btn { background: #1e1e1e; border: 1px solid #2e2e2e; color: #888; font-family: 'Courier New', monospace; font-size: 12px; padding: 5px 12px; cursor: pointer; text-transform: uppercase; transition: all 0.15s; }
+  .bulk-btn:hover { background: #2a2a2a; color: #ffc400; }
+  .bulk-btn.copied { background: #0d1a0d; border-color: #2e4a2e; color: #5dba5d; }
+
+  /* TIER HEADER */
+  .tier-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 10px 14px; background: #141414; border: 1px solid #2e2e2e; }
+  .tier-header-left { display: flex; align-items: center; gap: 10px; }
+  .tier-header-right { display: flex; gap: 8px; }
+  .tier-title { color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* META ROW */
+  .meta-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #1e1e1e; }
+  .why-line { color: #555; font-size: 12px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #1e1e1e; }
+
+  /* HOOK BLOCKS */
+  .hook-block { background: #0f0c00; border-left: 3px solid #ffc400; padding: 12px 16px; margin-bottom: 10px; color: #ffc400; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6; }
+
+  /* STRUCTURE BLOCK */
+  .structure-block { background: #0f0800; border-left: 3px solid #ff3d00; padding: 12px 16px; color: #ffc400; font-size: 13px; line-height: 1.7; margin-bottom: 12px; }
+  .example-block { background: #050f05; border: 1px solid #1e3a1e; color: #4caf50; font-size: 13px; padding: 14px 16px; white-space: pre-wrap; margin-bottom: 10px; }
+
+  /* VARIABLES GRID */
+  .vars-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .var-cell { background: #0d0d0d; border: 1px solid #2e2e2e; padding: 8px 12px; }
+  .var-name { color: #ffc400; font-size: 11px; font-weight: bold; }
+  .var-desc { color: #666; font-size: 11px; margin-top: 2px; }
+
+  /* QT ANGLE PILL */
+  .angle-pill { background: #1a1400; border: 1px solid #4a3800; color: #ffc400; font-size: 10px; padding: 2px 8px; display: inline-block; margin-top: 6px; }
+
+  /* SECTION DIVIDER */
+  .section-divider { border: none; border-top: 1px solid #1e1e1e; margin: 24px 0; }
+</style>
+</head>
+<body>
+
+<div id="nav">
+  <button class="tab-btn active" onclick="showTab('patterns')">[ Patterns ]</button>
+  <button class="tab-btn" onclick="showTab('templates')">[ Templates ]</button>
+  <button class="tab-btn" onclick="showTab('postqueue')">[ Post Queue ]</button>
+  <button class="tab-btn" onclick="showTab('replies')">[ Replies ]</button>
+  <button class="tab-btn" onclick="showTab('qtangles')">[ QT Angles ]</button>
+  <button class="tab-btn" onclick="showTab('extraction')">[ Extraction ]</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ PATTERNS ═══ -->
+<div id="patterns" class="section active">
+  <h2>Viral Patterns — Tier S &amp; A</h2>
+
+  <!-- P1: System Expose -->
+  <div class="card tier-s">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <span class="badge badge-s">TIER S</span>
+      <span class="pattern-name">The System Expose</span>
+    </div>
+    <p class="muted">Take a familiar financial or social "rule" and flip the math to show the audience they've been robbed. Numbers do the talking. Conclusion is one damning sentence.</p>
+    <div class="label">Why it works</div>
+    <p class="muted">Triggers identity-threat + financial fear simultaneously. The audience shares because the post says what they always suspected but couldn't quantify. Controversy drives reply volume from defenders, boosting reach further.</p>
+    <div class="label">Language from data</div>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">scam</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">10 times more</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">if you invested</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">instead</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">roughly</span>
+    <div class="label">Scores</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+      <span class="score-pill">Virality <strong>97</strong></span>
+      <span class="score-pill">Hook <strong>95</strong></span>
+      <span class="score-pill">Replication <strong>91</strong></span>
+      <span class="score-pill">Visual Boost <strong>88</strong></span>
+    </div>
+    <div style="margin-top:10px;"><span class="badge badge-real">REAL IMAGE</span></div>
+    <p class="muted" style="margin-top:6px;">Side-by-side comparison screenshot: SS payout vs compound growth calculator. Use a free retirement calculator screenshot.</p>
+  </div>
+
+  <!-- P2: Secret Resource Drop -->
+  <div class="card tier-s">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <span class="badge badge-s">TIER S</span>
+      <span class="pattern-name">The Secret Resource Drop</span>
+    </div>
+    <p class="muted">A bulleted list of tools, sites, or assets the audience doesn't know about, framed as forbidden or gatekept. Each item has a one-line payoff. Closes with "you're welcome."</p>
+    <div class="label">Why it works</div>
+    <p class="muted">Pure value + curiosity gap on every bullet. The "secret" framing makes saving and sharing feel urgent. Works for any resource category — free tools, AI models, information arbitrage.</p>
+    <div class="label">Language from data</div>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">secret sites</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">you'll probably love</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">for free</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">no restrictions</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">you're welcome</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">gatekeep</span>
+    <div class="label">Scores</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+      <span class="score-pill">Virality <strong>94</strong></span>
+      <span class="score-pill">Hook <strong>92</strong></span>
+      <span class="score-pill">Replication <strong>96</strong></span>
+      <span class="score-pill">Visual Boost <strong>72</strong></span>
+    </div>
+    <div style="margin-top:10px;"><span class="badge badge-real">REAL IMAGE</span></div>
+    <p class="muted" style="margin-top:6px;">Screenshot of the actual tools/sites listed — browser tab showing one of them open. Proof it's real.</p>
+  </div>
+
+  <!-- P3: The Lived Math -->
+  <div class="card tier-s">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <span class="badge badge-s">TIER S</span>
+      <span class="pattern-name">The Lived Math</span>
+    </div>
+    <p class="muted">Opens with a character doing something counterintuitive with money. Bullet-point operational breakdown of the method. Closes with a single awe word ("Inspiring" / "Anything is possible").</p>
+    <div class="label">Why it works</div>
+    <p class="muted">Combines storytelling, aspiration, and step-by-step replicability. The specific numbers ($3.6M/yr, $400/month, 220+ apps) create credibility. The "5 hours a week" detail is the emotional peak — it reframes what effort means.</p>
+    <div class="label">Language from data</div>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">met a guy</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">most accept fast</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">passive</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">5 hours a week</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">Inspiring</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">he's moved on</span>
+    <div class="label">Scores</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+      <span class="score-pill">Virality <strong>93</strong></span>
+      <span class="score-pill">Hook <strong>91</strong></span>
+      <span class="score-pill">Replication <strong>85</strong></span>
+      <span class="score-pill">Visual Boost <strong>90</strong></span>
+    </div>
+    <div style="margin-top:10px;"><span class="badge badge-real">REAL IMAGE</span></div>
+    <p class="muted" style="margin-top:6px;">App Store screenshot showing old app with 50k+ downloads, or app revenue dashboard. Real proof screenshot.</p>
+  </div>
+
+  <!-- P4: Generational Math -->
+  <div class="card tier-a">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <span class="badge badge-a">TIER A</span>
+      <span class="pattern-name">Generational Math</span>
+    </div>
+    <p class="muted">Two-sentence structure: what the previous generation had vs what your generation has. Closes with one line that names the systemic cause without blaming individuals.</p>
+    <div class="label">Why it works</div>
+    <p class="muted">Provides shared identity validation for millennials and Gen Z. "Something in the system changed" deflects individual shame and channels it into collective frustration — reply-bait for both agreement and disagreement camps.</p>
+    <div class="label">Language from data</div>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">your grandparents</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">now people</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">that's not laziness</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">something changed</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">struggle to afford</span>
+    <div class="label">Scores</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+      <span class="score-pill">Virality <strong>88</strong></span>
+      <span class="score-pill">Hook <strong>86</strong></span>
+      <span class="score-pill">Replication <strong>93</strong></span>
+      <span class="score-pill">Visual Boost <strong>80</strong></span>
+    </div>
+    <div style="margin-top:10px;"><span class="badge badge-real">REAL IMAGE</span></div>
+    <p class="muted" style="margin-top:6px;">Screenshot of median home price chart 1970–2026, or inflation-adjusted wage chart. Any credible economic data viz.</p>
+  </div>
+
+  <!-- P5: Living Proof Self-Roast -->
+  <div class="card tier-a">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <span class="badge badge-a">TIER A</span>
+      <span class="pattern-name">Living Proof Self-Roast</span>
+    </div>
+    <p class="muted">Admits a chaotic or contradictory life situation with dark humor. No arc, no lesson, no resolution. Just the facts and one absurd kicker line.</p>
+    <div class="label">Why it works</div>
+    <p class="muted">The authenticity is the hook. No performance. People reply because they see themselves. The contradiction (losing in web3 AND doing hip thrusts AND still here) is the actual thesis — resilience without the motivational wrapper.</p>
+    <div class="label">Language from data</div>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">i contain multitudes</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">still here</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">somehow</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">lmeow</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">i don't even have time to think about that</span>
+    <div class="label">Scores</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+      <span class="score-pill">Virality <strong>82</strong></span>
+      <span class="score-pill">Hook <strong>79</strong></span>
+      <span class="score-pill">Replication <strong>88</strong></span>
+      <span class="score-pill">Visual Boost <strong>76</strong></span>
+    </div>
+    <div style="margin-top:10px;"><span class="badge badge-real">REAL IMAGE</span></div>
+    <p class="muted" style="margin-top:6px;">Personal selfie or lifestyle photo that looks real, not curated. A meme image also works if the vibe matches the chaos energy.</p>
+  </div>
+
+  <!-- P6: AI Story Win -->
+  <div class="card tier-a">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <span class="badge badge-a">TIER A</span>
+      <span class="pattern-name">AI Story Win</span>
+    </div>
+    <p class="muted">Short narrative of someone using AI to solve an "impossible" real-world problem. The stakes are concrete (dollar amount). The absurd detail (old password) is the shareable moment.</p>
+    <div class="label">Why it works</div>
+    <p class="muted">It's a demonstration, not an explanation. The recovered wallet + password reveal is the emotional climax. Closes with "anything is possible now" — maximum shareability without sounding like an ad.</p>
+    <div class="label">Language from data</div>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">this might be the greatest</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">the wallet just sat there laughing</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">anything is possible now</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">seven trillion attempts</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">straight up rewrote</span>
+    <div class="label">Scores</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+      <span class="score-pill">Virality <strong>85</strong></span>
+      <span class="score-pill">Hook <strong>88</strong></span>
+      <span class="score-pill">Replication <strong>80</strong></span>
+      <span class="score-pill">Visual Boost <strong>85</strong></span>
+    </div>
+    <div style="margin-top:10px;"><span class="badge badge-real">REAL IMAGE</span></div>
+    <p class="muted" style="margin-top:6px;">Screenshot of Claude conversation showing the actual result, or on-chain transaction proving wallet recovery. Terminal output also works.</p>
+  </div>
+
+  <!-- P7: Financial Frustration Bulletin -->
+  <div class="card tier-a">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <span class="badge badge-a">TIER A</span>
+      <span class="pattern-name">Financial Frustration Bulletin</span>
+    </div>
+    <p class="muted">Opens with an observation about economic stress. Uses ALL CAPS for the cost items going up. Ends with what people actually want — not to be rich, just to breathe.</p>
+    <div class="label">Why it works</div>
+    <p class="muted">The all-caps cost list is a scroll-stopper. Each line is a shared lived experience. The final reframe ("not asking to be rich, just want breathing room") is the reply trigger — it's the sentence people want to screenshot.</p>
+    <div class="label">Language from data</div>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">playing defense</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">breathing room</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">constantly</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">not even asking to be rich</span>
+    <span class="pill-cyan" style="display:inline-block;padding:2px 8px;margin:2px;border:1px solid #004d5a;color:#00e5ff;font-size:11px;">keeps acting like</span>
+    <div class="label">Scores</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;">
+      <span class="score-pill">Virality <strong>84</strong></span>
+      <span class="score-pill">Hook <strong>80</strong></span>
+      <span class="score-pill">Replication <strong>92</strong></span>
+      <span class="score-pill">Visual Boost <strong>78</strong></span>
+    </div>
+    <div style="margin-top:10px;"><span class="badge badge-real">REAL IMAGE</span></div>
+    <p class="muted" style="margin-top:6px;">Screenshot of grocery receipt, utility bill, or rent/mortgage statement showing year-over-year increase. Real personal finance proof image.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ TEMPLATES ═══ -->
+<div id="templates" class="section">
+  <h2>Fill-In Templates — All Tier S &amp; A Patterns</h2>
+
+  <h3 style="margin-bottom:14px;">GROUP 1 — TEXT + REAL IMAGE TEMPLATES</h3>
+
+  <!-- T1 -->
+  <div class="card tier-s">
+    <div style="color:#888;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Template 01 — The System Expose</div>
+    <div class="structure-block">
+Paying about [ANNUAL_COST] a year into [SYSTEM] from age [START] to [END] gets you roughly [SYSTEM_PAYOUT].
+
+If you invested that same amount in [ALTERNATIVE], you could end up with around [ALTERNATIVE_RETURN] instead.
+
+About [MULTIPLIER] times more.
+
+[SYSTEM] is a scam.
+    </div>
+    <div class="vars-grid">
+      <div class="var-cell"><div class="var-name">[ANNUAL_COST]</div><div class="var-desc">The annual payment into the system (e.g. $7,500, $4,200)</div></div>
+      <div class="var-cell"><div class="var-name">[SYSTEM]</div><div class="var-desc">The institution being exposed (e.g. Social Security, health insurance, pension)</div></div>
+      <div class="var-cell"><div class="var-name">[SYSTEM_PAYOUT]</div><div class="var-desc">What the system returns (e.g. $3,200/month)</div></div>
+      <div class="var-cell"><div class="var-name">[ALTERNATIVE]</div><div class="var-desc">The alternative investment (e.g. low-cost index funds, BTC, real estate)</div></div>
+      <div class="var-cell"><div class="var-name">[ALTERNATIVE_RETURN]</div><div class="var-desc">What the alternative returns (e.g. $32,000/month)</div></div>
+      <div class="var-cell"><div class="var-name">[MULTIPLIER]</div><div class="var-desc">The ratio (e.g. 10x, 8x, 15x)</div></div>
+    </div>
+    <div class="example-block">Paying about $4,200 a year into a traditional pension from age 22 to 65 gets you roughly $1,800 a month in retirement.
+
+If you invested that same amount in index funds, you could end up with around $21,000 a month instead.
+
+About 11 times more.
+
+Corporate pensions are a scam.</div>
+    <div class="img-real">📸 REAL IMAGE: Screenshot of a pension statement side-by-side with a compound interest calculator showing the same contributions invested instead. Use a free calculator like investor.gov.</div>
+  </div>
+
+  <!-- T2 -->
+  <div class="card tier-s">
+    <div style="color:#888;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Template 02 — The Secret Resource Drop</div>
+    <div class="structure-block">
+[SECRET_LABEL] [NICHE] tools you'll probably love 👀
+
+→ [URL_1] : [TOOL_1_PAYOFF]
+→ [URL_2] : [TOOL_2_PAYOFF]
+→ [URL_3] : [TOOL_3_PAYOFF]
+→ [URL_4] : [TOOL_4_PAYOFF]
+
+you're welcome, as always 🥰
+    </div>
+    <div class="vars-grid">
+      <div class="var-cell"><div class="var-name">[SECRET_LABEL]</div><div class="var-desc">Framing word: "secret", "hidden", "banned", "underground"</div></div>
+      <div class="var-cell"><div class="var-name">[NICHE]</div><div class="var-desc">Topic category: crypto tools, AI models, trading resources, free finance tools</div></div>
+      <div class="var-cell"><div class="var-name">[URL_1–4]</div><div class="var-desc">Actual working links to real tools</div></div>
+      <div class="var-cell"><div class="var-name">[TOOL_PAYOFF]</div><div class="var-desc">One sentence why it's valuable — be specific, not vague</div></div>
+    </div>
+    <div class="example-block">secret crypto tools you'll probably love 👀
+
+→ dune.com : on-chain analytics that whale desks actually use, free
+→ tokenterminal.com : protocol revenue data before it hits mainstream
+→ defillama.com : TVL across every chain, real-time, no subscription
+→ nansen.ai/free : wallet labeling so you can track smart money moves
+
+you're welcome, as always 🥰</div>
+    <div class="img-real">📸 REAL IMAGE: Screenshot of one of the tools open in a browser showing real data. Proves they're working and not dead links.</div>
+  </div>
+
+  <!-- T3 -->
+  <div class="card tier-s">
+    <div style="color:#888;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Template 03 — The Lived Math</div>
+    <div class="structure-block">
+Met a [DESCRIPTOR] making [ANNUAL_INCOME] a year
+With one of the cleanest [CATEGORY] plays I've ever heard of
+
+[STEP_1_ACTION]
+[STEP_2_ACTION]. Most [RESISTANCE_OVERCOME].
+[STEP_3_LEVERAGE_ACTION]
+Each [UNIT] starts pulling [UNIT_REVENUE] [CADENCE]
+[SCALE] across [CATEGORIES]
+Spends [TIME_INVESTMENT] on the whole [PORTFOLIO]
+
+[CLOSING_WORD]
+    </div>
+    <div class="vars-grid">
+      <div class="var-cell"><div class="var-name">[DESCRIPTOR]</div><div class="var-desc">Person type: "guy", "woman", "trader", "dev" — anonymous</div></div>
+      <div class="var-cell"><div class="var-name">[ANNUAL_INCOME]</div><div class="var-desc">Specific dollar amount (e.g. $840k, $2.1M)</div></div>
+      <div class="var-cell"><div class="var-name">[CATEGORY]</div><div class="var-desc">The play category: digital, crypto, SaaS, info-product</div></div>
+      <div class="var-cell"><div class="var-name">[TIME_INVESTMENT]</div><div class="var-desc">Shockingly low hours (e.g. 3 hours a week, 90 minutes a day)</div></div>
+      <div class="var-cell"><div class="var-name">[CLOSING_WORD]</div><div class="var-desc">Single emotional beat: "Inspiring" / "Mad" / "Respect"</div></div>
+      <div class="var-cell"><div class="var-name">[SCALE]</div><div class="var-desc">The portfolio size — specific number (e.g. Owns 47 newsletters)</div></div>
+    </div>
+    <div class="example-block">Met a woman making $840k a year
+With one of the cleanest newsletter plays I've ever heard of
+
+She finds Substack newsletters with 20k+ subscribers but no new posts in 12+ months
+DMs the writers offering $1-2k cash. Most take it within 48 hours, they've already quit
+
+Hires a VA for $300/month to repurpose old posts and run a weekly digest
+Each newsletter pulls $1,200-4,000/month from sponsorships alone
+Owns 31 across niches she has zero interest in
+Spends 4 hours a week on the whole portfolio
+
+Inspiring</div>
+    <div class="img-real">📸 REAL IMAGE: Screenshot of a Substack newsletter with high subscriber count showing "last published X months ago" — or a Beehiiv/Substack revenue dashboard (redacted).</div>
+  </div>
+
+  <!-- T4 -->
+  <div class="card tier-a">
+    <div style="color:#888;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Template 04 — Generational Math</div>
+    <div class="structure-block">
+your [GRANDPARENT_GEN] [PAST_ACHIEVEMENT] on [SINGLE_RESOURCE].
+
+now people with [CURRENT_RESOURCES] struggle to [SAME_GOAL].
+
+that's not [INDIVIDUAL_FLAW]. [SYSTEMIC_OBSERVATION].
+    </div>
+    <div class="vars-grid">
+      <div class="var-cell"><div class="var-name">[GRANDPARENT_GEN]</div><div class="var-desc">generational reference: "grandparents", "parents", "boomer neighbors"</div></div>
+      <div class="var-cell"><div class="var-name">[PAST_ACHIEVEMENT]</div><div class="var-desc">What they could do: "bought a house", "retired at 55", "raised 4 kids"</div></div>
+      <div class="var-cell"><div class="var-name">[SINGLE_RESOURCE]</div><div class="var-desc">"one income", "one salary", "a pension"</div></div>
+      <div class="var-cell"><div class="var-name">[CURRENT_RESOURCES]</div><div class="var-desc">"two incomes", "two college degrees", "three roommates"</div></div>
+      <div class="var-cell"><div class="var-name">[INDIVIDUAL_FLAW]</div><div class="var-desc">"laziness", "bad choices", "entitlement"</div></div>
+      <div class="var-cell"><div class="var-name">[SYSTEMIC_OBSERVATION]</div><div class="var-desc">One sentence naming the system, not people: "something in the math changed."</div></div>
+    </div>
+    <div class="example-block">your parents retired at 60 on one pension.
+
+now people with two full-time incomes and no kids struggle to save $10k.
+
+that's not poor discipline. the math was different then.</div>
+    <div class="img-real">📸 REAL IMAGE: Chart showing real wage growth vs housing/rent costs from 1980–2026. FRED economic data screenshots work perfectly here.</div>
+  </div>
+
+  <!-- T5 -->
+  <div class="card tier-a">
+    <div style="color:#888;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Template 05 — Living Proof Self-Roast</div>
+    <div class="structure-block">
+okay so i'm [AGE] right
+[RESPONSIBILITY_1], [RESPONSIBILITY_2], [RESPONSIBILITY_3]
+i [BAD_HABIT_1] and [BAD_HABIT_2]
+still [CONTRADICTORY_POSITIVE_1]
+still here every day
+[UNEXPECTED_STATUS] somehow
+
+people ask me "[DISMISSIVE_QUESTION]"
+i don't even have time to think about that
+    </div>
+    <div class="vars-grid">
+      <div class="var-cell"><div class="var-name">[AGE]</div><div class="var-desc">Specific age that sets context for the chaos</div></div>
+      <div class="var-cell"><div class="var-name">[RESPONSIBILITY_1–3]</div><div class="var-desc">Real obligations: "full time job", "3 kids", "mortgage"</div></div>
+      <div class="var-cell"><div class="var-name">[BAD_HABIT_1–2]</div><div class="var-desc">Honest flaw: "lose money on memecoins", "drink too much coffee"</div></div>
+      <div class="var-cell"><div class="var-name">[CONTRADICTORY_POSITIVE]</div><div class="var-desc">Something healthy or aspirational: "still gym", "still building"</div></div>
+      <div class="var-cell"><div class="var-name">[DISMISSIVE_QUESTION]</div><div class="var-desc">What haters or worried people ask: "is it over for you?" / "when are you quitting?"</div></div>
+      <div class="var-cell"><div class="var-name">[UNEXPECTED_STATUS]</div><div class="var-desc">Surprising state: "portfolio still green", "mind still clear", "still laughing"</div></div>
+    </div>
+    <div class="example-block">okay so i'm 34 right
+full time job, 2 kids, no savings account
+i overtrade and get rugged every bull run
+still dca every friday
+still here every day
+mind still clear somehow
+
+people ask me "bro when are you giving up on crypto"
+i don't even have time to think about that</div>
+    <div class="img-real">📸 REAL IMAGE: A candid personal photo — phone selfie, desk setup, or a meme image that matches the chaos-but-still-here energy. Real &gt; polished.</div>
+  </div>
+
+  <!-- T6 -->
+  <div class="card tier-a">
+    <div style="color:#888;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Template 06 — AI Story Win</div>
+    <div class="structure-block">
+🚨[ATTENTION_FLAG]
+
+[PERSON_DESCRIPTOR] [PROBLEM_SETUP_SENTENCE]
+[PROBLEM_DURATION] and [FAILED_ATTEMPTS]. nothing worked.
+
+this week [PERSON] dumped [DATA_INPUT] to [AI_TOOL] and it [AI_ACTION_CHAIN].
+
+[ABSURD_DETAIL]
+now [PERSON] has [OUTCOME_WITH_DOLLAR_VALUE].
+
+[CLOSING_LINE].
+    </div>
+    <div class="vars-grid">
+      <div class="var-cell"><div class="var-name">[ATTENTION_FLAG]</div><div class="var-desc">Short phrase after 🚨 that sets stakes: "this might be the craziest Claude use case yet"</div></div>
+      <div class="var-cell"><div class="var-name">[PERSON_DESCRIPTOR]</div><div class="var-desc">Anonymous character: "a guy", "someone in CT", "a dev"</div></div>
+      <div class="var-cell"><div class="var-name">[PROBLEM_DURATION]</div><div class="var-desc">How long they suffered: "3 years", "since 2019", "since the FTX crash"</div></div>
+      <div class="var-cell"><div class="var-name">[AI_ACTION_CHAIN]</div><div class="var-desc">What the AI actually did — be specific, technical, chain multiple actions</div></div>
+      <div class="var-cell"><div class="var-name">[ABSURD_DETAIL]</div><div class="var-desc">The memorable detail — the password, the old file, the weird edge case</div></div>
+      <div class="var-cell"><div class="var-name">[OUTCOME_WITH_DOLLAR_VALUE]</div><div class="var-desc">Concrete financial result: "access to 12 ETH worth $38k"</div></div>
+    </div>
+    <div class="example-block">🚨this might be the wildest Claude use case i've seen this month.
+
+a guy deployed a Solidity contract in 2021, made $90k, then lost the deployer wallet seed.
+two years of recovery attempts, paid $800 to two different services. nothing.
+
+this week he fed every email, every note, every dev log from that year into Claude.
+it cross-referenced his writing patterns, found a partial phrase he used as a password hint in an old Notion doc, reconstructed the full derivation path, and recovered the wallet.
+
+his note said "seed hint: dog street 2021"
+now he has full access to a wallet worth $61,000 at today's prices.
+
+anything is possible now.</div>
+    <div class="img-real">📸 REAL IMAGE: Screenshot of the Claude conversation showing the analysis, or on-chain explorer showing the wallet's transaction history. Etherscan/Solscan screenshot.</div>
+  </div>
+
+  <!-- T7 Financial Frustration -->
+  <div class="card tier-a">
+    <div style="color:#888;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Template 07 — Financial Frustration Bulletin</div>
+    <div class="structure-block">
+[OBSERVATION_OPENER]. It's the feeling that no matter how hard you work, you're constantly playing defense [FINANCIALLY/CONTEXT].
+
+[COST_1] UP
+[COST_2] UP
+[COST_3] UP
+[COST_4] STILL [ADJECTIVE]
+
+Meanwhile everyone online keeps acting like [BLAME_NARRATIVE]
+
+A lot of [AUDIENCE] aren't asking to be rich
+They just want [SIMPLE_WANT] again
+    </div>
+    <div class="vars-grid">
+      <div class="var-cell"><div class="var-name">[OBSERVATION_OPENER]</div><div class="var-desc">Emotion setup: "What frustrates crypto holders right now isn't even the bear market"</div></div>
+      <div class="var-cell"><div class="var-name">[COST_1–4]</div><div class="var-desc">ALL CAPS rising costs: GAS FEES, NODE COSTS, HARDWARE, ELECTRICITY</div></div>
+      <div class="var-cell"><div class="var-name">[BLAME_NARRATIVE]</div><div class="var-desc">"people who stress about gas fees aren't real builders"</div></div>
+      <div class="var-cell"><div class="var-name">[AUDIENCE]</div><div class="var-desc">"people in CT", "retail traders", "on-chain users"</div></div>
+      <div class="var-cell"><div class="var-name">[SIMPLE_WANT]</div><div class="var-desc">"their bags to hold value", "one good exit", "one profitable cycle"</div></div>
+      <div class="var-cell"><div class="var-name">[ADJECTIVE]</div><div class="var-desc">"RIDICULOUS", "UNTOUCHABLE", "UNAFFORDABLE"</div></div>
+    </div>
+    <div class="example-block">What frustrates most people in CT isn't even the prices. It's the feeling that no matter how smart you play it, you're constantly playing defense against the macro.
+
+GAS FEES UP
+NODE COSTS UP
+HARDWARE UP
+STABLECOIN YIELD STILL RIDICULOUS LOW
+
+Meanwhile everyone keeps calling retail "degens" for being stressed
+
+A lot of people in CT aren't asking to 100x
+They just want one clean exit again</div>
+    <div class="img-real">📸 REAL IMAGE: Screenshot of on-chain gas fee tracker showing rising trends, or a chart showing stablecoin yields declining. Dune dashboard screenshot works.</div>
+  </div>
+
+  <h3 style="margin: 24px 0 14px;">GROUP 2 — TEXT + AI IMAGE TEMPLATES (MAX 2)</h3>
+
+  <div class="card tier-b" style="border-left:3px solid #ffc400;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <span class="badge badge-ai">⚠️ AI IMAGE</span>
+      <span style="color:#888;font-size:11px;text-transform:uppercase;">Template AI-01 — Crypto Midnight Grind</span>
+    </div>
+    <div class="structure-block">
+[TIME_MARKER] shift. 🧏🏻‍♂️
+[REFRAME_LINE]
+
+[OBSERVATION_ABOUT_THE_GRIND]
+[WHAT_OTHERS_MISS]
+
+[CLOSING_FLEX]
+    </div>
+    <div class="example-block">midnight shift. 🧏🏻‍♂️
+whenever you start is your morning, or what's that word
+
+the people posting GM at 6am and the people posting GM at 2pm are running completely different games
+one is performing discipline. the other is doing actual work.
+
+both can make it. only one knows why.</div>
+    <div class="img-ai">⚠️ AI IMAGE — Grok Imagine Prompt: "A lone figure at a minimal dark desk, multiple monitor glow illuminating their face, crypto charts visible on screens, 2am vibe, cinematic still photography style, dark moody atmosphere, photorealistic, no text"</div>
+  </div>
+
+  <div class="card tier-b" style="border-left:3px solid #ffc400;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <span class="badge badge-ai">⚠️ AI IMAGE</span>
+      <span style="color:#888;font-size:11px;text-transform:uppercase;">Template AI-02 — The Inevitable Entry</span>
+    </div>
+    <div class="structure-block">
+The goal is to [ONGOING_ACTION] in [CONTEXT]
+You might not be [WHERE_YOU_WANT] right now
+But trust me, [REASSURANCE]
+
+[CONCRETE_SIGNAL_THAT_SUPPORTS_IT]
+    </div>
+    <div class="example-block">The goal is to keep moving forward in crypto
+You might not be in profit right now
+But trust me, the cycle doesn't care about your entry date
+
+The chart always looks obvious in hindsight. Keep building.</div>
+    <div class="img-ai">⚠️ AI IMAGE — Grok Imagine Prompt: "Abstract upward-curving glowing blue line on a dark background, representing growth over time, minimalist digital art, no numbers or text, clean futuristic aesthetic, moody lighting"</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ POST QUEUE ═══ -->
+<div id="postqueue" class="section">
+  <h2>Post Queue</h2>
+
+  <!-- TIER S -->
+  <div class="tier-header">
+    <div class="tier-header-left">
+      <span class="badge badge-s">TIER S</span>
+      <span class="tier-title">Must Post — 6 Posts</span>
+    </div>
+    <div class="tier-header-right">
+      <button class="bulk-btn" onclick="bulkCopy('tier-s','posts-images')">Copy All S Posts + Images</button>
+      <button class="bulk-btn" onclick="bulkCopy('tier-s','full')">Copy All S Full</button>
+    </div>
+  </div>
+
+  <div class="card tier-s post-card"
+    data-tweet="Paying $220/month into a 401k match that caps at 3% gets you roughly $1,400/month in retirement benefits.
+
+If you had put that same $220 into Bitcoin every month since 2015, you'd be looking at $47,000/month passive from yield alone.
+
+About 33 times more.
+
+Corporate retirement advice is a scam."
+    data-image="Side-by-side screenshot: 401k calculator showing $1,400/month retirement vs Bitcoin DCA calculator showing same $220/month investment from 2015. Use portfoliovisualizer.com or BTC DCA tool screenshot."
+    data-why="System Expose pattern at peak power. Real numbers from a specific asset class. The '33x more' is the scroll-stop. Reply bait for both haters and believers drives algorithmic reach.">
+    <div class="post-text">Paying $220/month into a 401k match that caps at 3% gets you roughly $1,400/month in retirement benefits.
+
+If you had put that same $220 into Bitcoin every month since 2015, you'd be looking at $47,000/month passive from yield alone.
+
+About 33 times more.
+
+Corporate retirement advice is a scam.</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>97</strong></span>
+      <span class="score-pill">Hook <strong>95</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: Side-by-side screenshot: 401k calculator showing $1,400/month retirement vs Bitcoin DCA calculator showing same $220/month investment from 2015. Use portfoliovisualizer.com or BTC DCA tool screenshot.</div>
+    <div class="why-line">WHY: System Expose pattern at peak power. Real numbers from a specific asset class. The "33x more" is the scroll-stop. Reply bait for both haters and believers drives algorithmic reach.</div>
+  </div>
+
+  <div class="card tier-s post-card"
+    data-tweet="secret crypto tools you'll probably love 👀
+
+→ dune.com : on-chain analytics that whale desks actually use. free.
+→ tokenterminal.com : protocol revenue before it hits mainstream news
+→ defillama.com : TVL across every chain. real-time. no paywall.
+→ velo.xyz : cross-chain liquidity and flow data the algos watch
+
+dem no dey gatekeep there. you're welcome, as always 🥰"
+    data-image="Screenshot of Dune Analytics dashboard showing a live whale wallet tracker or on-chain flow chart — proves the tool is real and the data is valuable."
+    data-why="Secret Resource Drop with actual crypto-native tools. Borrows 'dem no dey gatekeep' from the highest-performing language in the dataset. Each bullet has a specific payoff. Save rate will be very high.">
+    <div class="post-text">secret crypto tools you'll probably love 👀
+
+→ dune.com : on-chain analytics that whale desks actually use. free.
+→ tokenterminal.com : protocol revenue before it hits mainstream news
+→ defillama.com : TVL across every chain. real-time. no paywall.
+→ velo.xyz : cross-chain liquidity and flow data the algos watch
+
+dem no dey gatekeep there. you're welcome, as always 🥰</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>94</strong></span>
+      <span class="score-pill">Hook <strong>92</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: Screenshot of Dune Analytics dashboard showing a live whale wallet tracker or on-chain flow chart — proves the tool is real and the data is valuable.</div>
+    <div class="why-line">WHY: Secret Resource Drop with actual crypto-native tools. Borrows "dem no dey gatekeep" from the highest-performing language in the dataset. Each bullet has a specific payoff. Save rate will be very high.</div>
+  </div>
+
+  <div class="card tier-s post-card"
+    data-tweet="Met a guy making $1.2 million a year
+With one of the cleanest info arbitrage plays I've ever heard of
+
+He finds subreddits with 500k+ members but no monetization
+Scrapes the top 100 posts per month for recurring questions
+Builds a $27 PDF answering those exact questions
+Runs $50/week in Reddit ads directly in those communities
+Each PDF pulls $4,000-12,000/month passive
+Owns 14 across niches he doesn't even browse
+Spends 3 hours a week on the whole portfolio
+
+Inspiring"
+    data-image="Screenshot of Reddit showing a large community (500k+ members) alongside a Gumroad or Stripe dashboard showing passive PDF sales. Blur out personal info."
+    data-why="Lived Math pattern. Combines the proven 'Met a guy' opener with a Reddit angle that's directly from the dataset's top performer. The $27 price point is credible. '3 hours a week' is the emotional hook. Reply flood guaranteed.">
+    <div class="post-text">Met a guy making $1.2 million a year
+With one of the cleanest info arbitrage plays I've ever heard of
+
+He finds subreddits with 500k+ members but no monetization
+Scrapes the top 100 posts per month for recurring questions
+Builds a $27 PDF answering those exact questions
+Runs $50/week in Reddit ads directly in those communities
+Each PDF pulls $4,000-12,000/month passive
+Owns 14 across niches he doesn't even browse
+Spends 3 hours a week on the whole portfolio
+
+Inspiring</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>93</strong></span>
+      <span class="score-pill">Hook <strong>91</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: Screenshot of Reddit showing a large community (500k+ members) alongside a Gumroad or Stripe dashboard showing passive PDF sales. Blur out personal info.</div>
+    <div class="why-line">WHY: Lived Math pattern. Combines the proven "Met a guy" opener with a Reddit angle that's directly from the dataset's top performer. The $27 price point is credible. "3 hours a week" is the emotional hook. Reply flood guaranteed.</div>
+  </div>
+
+  <div class="card tier-s post-card"
+    data-tweet="🚨this might be the craziest use of Claude I've seen this cycle.
+
+a trader lost access to a wallet holding 18 SOL after his laptop died in 2022. no seed. no backup. just a habit of using phrases from song lyrics as passwords.
+
+this week he fed Claude every playlist, every note, every journal entry from that period. Claude identified 3 candidate passphrases from his writing patterns, reconstructed the likely derivation, and recovered the wallet on the second attempt.
+
+his password was a mistyped Kendrick lyric from 2021.
+now he has full access to 18 SOL worth $2,700 today.
+
+anything is possible now."
+    data-image="Screenshot of the Claude conversation showing the wallet analysis steps, or Phantom wallet showing a recovered wallet with transaction history. Solscan explorer screenshot also works."
+    data-why="AI Story Win pattern cloned from the #8 most viral post in the dataset. Specificity (18 SOL, Kendrick lyric, 2022) creates credibility. The emotional arc — lost → hopeless → recovered — is a share-forcing structure.">
+    <div class="post-text">🚨this might be the craziest use of Claude I've seen this cycle.
+
+a trader lost access to a wallet holding 18 SOL after his laptop died in 2022. no seed. no backup. just a habit of using phrases from song lyrics as passwords.
+
+this week he fed Claude every playlist, every note, every journal entry from that period. Claude identified 3 candidate passphrases from his writing patterns, reconstructed the likely derivation, and recovered the wallet on the second attempt.
+
+his password was a mistyped Kendrick lyric from 2021.
+now he has full access to 18 SOL worth $2,700 today.
+
+anything is possible now.</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>91</strong></span>
+      <span class="score-pill">Hook <strong>93</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: Screenshot of the Claude conversation showing the wallet analysis steps, or Phantom wallet showing a recovered wallet with transaction history. Solscan explorer screenshot also works.</div>
+    <div class="why-line">WHY: AI Story Win pattern cloned from the #8 most viral post in the dataset. Specificity (18 SOL, Kendrick lyric, 2022) creates credibility. The emotional arc — lost → hopeless → recovered — is a share-forcing structure.</div>
+  </div>
+
+  <div class="card tier-s post-card"
+    data-tweet="If you're in web3 and you don't know Reddit?
+
+Reddit na infinite money glitch.
+
+Okay."
+    data-image="Screenshot of a Reddit thread in r/CryptoCurrency or r/ethfinance with tens of thousands of upvotes, showing the engagement volume. Proves the audience is real and massive."
+    data-why="Direct riff on the #12 highest-scoring post in the entire dataset (EmekaOghali, score 3022). The pidgin-to-English switch is a trust signal. Short posts with this structure get massive reply rates because they invite 'tell me more' responses.">
+    <div class="post-text">If you're in web3 and you don't know Reddit?
+
+Reddit na infinite money glitch.
+
+Okay.</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>93</strong></span>
+      <span class="score-pill">Hook <strong>90</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: Screenshot of a Reddit thread in r/CryptoCurrency or r/ethfinance with tens of thousands of upvotes, showing the engagement volume. Proves the audience is real and massive.</div>
+    <div class="why-line">WHY: Direct riff on the #12 highest-scoring post in the entire dataset (EmekaOghali, score 3022). The pidgin-to-English switch is a trust signal. Short posts with this structure get massive reply rates because they invite "tell me more" responses.</div>
+  </div>
+
+  <div class="card tier-s post-card"
+    data-tweet="your parents could raise 3 kids on one factory job.
+
+now people with two tech salaries and no kids can't afford a 1-bedroom in a mid-tier city.
+
+that's not poor spending habits. the leverage changed."
+    data-image="FRED economic chart showing median home price to median income ratio from 1970–2026. Download from fred.stlouisfed.org — it's free, credible, and undeniable."
+    data-why="Generational Math pattern. Compressed to 3 sentences. 'The leverage changed' is a crypto-native way to say the system is broken — speaks directly to this audience's framing. Controversy from both sides drives reply volume.">
+    <div class="post-text">your parents could raise 3 kids on one factory job.
+
+now people with two tech salaries and no kids can't afford a 1-bedroom in a mid-tier city.
+
+that's not poor spending habits. the leverage changed.</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>88</strong></span>
+      <span class="score-pill">Hook <strong>86</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: FRED economic chart showing median home price to median income ratio from 1970–2026. Download from fred.stlouisfed.org — it's free, credible, and undeniable.</div>
+    <div class="why-line">WHY: Generational Math pattern. Compressed to 3 sentences. "The leverage changed" is a crypto-native way to say the system is broken — speaks directly to this audience's framing. Controversy from both sides drives reply volume.</div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- TIER A -->
+  <div class="tier-header">
+    <div class="tier-header-left">
+      <span class="badge badge-a">TIER A</span>
+      <span class="tier-title">Strong Posts — 11 Posts</span>
+    </div>
+    <div class="tier-header-right">
+      <button class="bulk-btn" onclick="bulkCopy('tier-a','posts-images')">Copy All A Posts + Images</button>
+      <button class="bulk-btn" onclick="bulkCopy('tier-a','full')">Copy All A Full</button>
+    </div>
+  </div>
+
+  <div class="card tier-a post-card"
+    data-tweet="okay so i'm 31 right
+full time job, 3 kids, no savings buffer
+i overleverage and get liquidated every quarter
+still dca every friday no matter what
+still in CT every day
+portfolio still breathing somehow
+
+people ask me 'bro when are you giving up on this'
+i don't even have time to think about that"
+    data-image="A raw, unfiltered selfie or phone photo — desk at night, coffee, charts in background. Nothing polished. Real beats produced every time for this format."
+    data-why="Living Proof Self-Roast from the dataset's high-reply posts. The contradiction (overleverage + still DCA-ing) is the hook. 'i don't even have time to think about that' is a 1-sentence closer that gets screenshot-shared.">
+    <div class="post-text">okay so i'm 31 right
+full time job, 3 kids, no savings buffer
+i overleverage and get liquidated every quarter
+still dca every friday no matter what
+still in CT every day
+portfolio still breathing somehow
+
+people ask me 'bro when are you giving up on this'
+i don't even have time to think about that</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>82</strong></span>
+      <span class="score-pill">Hook <strong>79</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: A raw, unfiltered selfie or phone photo — desk at night, coffee, charts in background. Nothing polished. Real beats produced every time for this format.</div>
+    <div class="why-line">WHY: Living Proof Self-Roast from the dataset's high-reply posts. The contradiction (overleverage + still DCA-ing) is the hook. "i don't even have time to think about that" is a 1-sentence closer that gets screenshot-shared.</div>
+  </div>
+
+  <div class="card tier-a post-card"
+    data-tweet="What frustrates CT right now isn't even the red candles. It's the feeling that no matter how well you research, you're constantly playing defense against the macro.
+
+GAS FEES UP
+NODE COSTS UP
+EXCHANGE FEES STILL RIDICULOUS
+STABLECOIN YIELD STILL NOTHING
+
+Meanwhile influencers keep acting like stressed retail traders just didn't do enough research
+
+A lot of people in CT aren't asking for a 100x
+They just want one clean profitable cycle again"
+    data-image="Screenshot of gas fee tracker (etherscan.io/gastracker or L2fees.info) showing elevated fees over 30 days, or a chart of stablecoin yields declining. Dune dashboard screenshot."
+    data-why="Financial Frustration Bulletin remixed for CT. The all-caps cost list is the scroll-stopper. Ends with 'one clean cycle' — the universal unspoken want of every CT participant. Reply volume will be high from both directions.">
+    <div class="post-text">What frustrates CT right now isn't even the red candles. It's the feeling that no matter how well you research, you're constantly playing defense against the macro.
+
+GAS FEES UP
+NODE COSTS UP
+EXCHANGE FEES STILL RIDICULOUS
+STABLECOIN YIELD STILL NOTHING
+
+Meanwhile influencers keep acting like stressed retail traders just didn't do enough research
+
+A lot of people in CT aren't asking for a 100x
+They just want one clean profitable cycle again</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>84</strong></span>
+      <span class="score-pill">Hook <strong>80</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: Screenshot of gas fee tracker (etherscan.io/gastracker or L2fees.info) showing elevated fees over 30 days, or a chart of stablecoin yields declining. Dune dashboard screenshot.</div>
+    <div class="why-line">WHY: Financial Frustration Bulletin remixed for CT. The all-caps cost list is the scroll-stopper. Ends with "one clean cycle" — the universal unspoken want of every CT participant. Reply volume will be high from both directions.</div>
+  </div>
+
+  <div class="card tier-a post-card"
+    data-tweet="so much money to be made in crypto right now
+
+the people not making it are the ones waiting for perfect conditions
+
+perfect conditions are not coming back"
+    data-image="On-chain chart showing trading volume or TVL recovery. DeFiLlama screenshot showing a sector with rising numbers. Any real market data showing current opportunity."
+    data-why="Three-line structure from the dataset's #23 post (NiphermeDave, 1033 score). The final line is a contrarian closer that forces a reaction. Extremely replicable, works in any market condition with minor edits.">
+    <div class="post-text">so much money to be made in crypto right now
+
+the people not making it are the ones waiting for perfect conditions
+
+perfect conditions are not coming back</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>80</strong></span>
+      <span class="score-pill">Hook <strong>78</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: On-chain chart showing trading volume or TVL recovery. DeFiLlama screenshot showing a sector with rising numbers. Any real market data showing current opportunity.</div>
+    <div class="why-line">WHY: Three-line structure from the dataset's #23 post (NiphermeDave, 1033 score). The final line is a contrarian closer that forces a reaction. Extremely replicable, works in any market condition with minor edits.</div>
+  </div>
+
+  <div class="card tier-a post-card"
+    data-tweet="How I actually route between AI models right now:
+
+Market research: Perplexity Pro
+Long analysis: Opus 4.6
+Quick code: Kimi 2.6
+X drafts: Sonnet 4.6
+On-chain data queries: Grok 4.3
+Image gen: GPT-Image-2
+Boilerplate: Qwen 3 local
+
+Single-model setups are why your AI bill is 10x what it needs to be"
+    data-image="Screenshot of multiple AI model interfaces open in browser tabs, or a simple self-made comparison table of the models and their use cases. Real desktop screenshot."
+    data-why="Direct pattern lift from DeRonin_'s model-routing post (130 score). Adapted and expanded with more detail. Specific model names create authority. The closing line is a contrarian burn that drives replies from people using single models.">
+    <div class="post-text">How I actually route between AI models right now:
+
+Market research: Perplexity Pro
+Long analysis: Opus 4.6
+Quick code: Kimi 2.6
+X drafts: Sonnet 4.6
+On-chain data queries: Grok 4.3
+Image gen: GPT-Image-2
+Boilerplate: Qwen 3 local
+
+Single-model setups are why your AI bill is 10x what it needs to be</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>81</strong></span>
+      <span class="score-pill">Hook <strong>83</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: Screenshot of multiple AI model interfaces open in browser tabs, or a simple self-made comparison table of the models and their use cases. Real desktop screenshot.</div>
+    <div class="why-line">WHY: Direct pattern lift from DeRonin_'s model-routing post (130 score). Adapted and expanded with more detail. Specific model names create authority. The closing line is a contrarian burn that drives replies from people using single models.</div>
+  </div>
+
+  <div class="card tier-a post-card"
+    data-tweet="spent saturday with people i love
+also checked charts 7 times
+
+i contain multitudes"
+    data-image="A candid photo of a social situation — friends, food, a table — with a phone face-up showing a chart in the foreground. Real life interrupted by charts. The joke is the image."
+    data-why="Direct riff on 1Cilineth's 706-score post. The self-aware humor + 'i contain multitudes' is a proven reply trigger in this dataset. Short posts with this structure have high comment-to-like ratios.">
+    <div class="post-text">spent saturday with people i love
+also checked charts 7 times
+
+i contain multitudes</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>79</strong></span>
+      <span class="score-pill">Hook <strong>76</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: A candid photo of a social situation — friends, food, a table — with a phone face-up showing a chart in the foreground. Real life interrupted by charts. The joke is the image.</div>
+    <div class="why-line">WHY: Direct riff on 1Cilineth's 706-score post. The self-aware humor + "i contain multitudes" is a proven reply trigger in this dataset. Short posts with this structure have high comment-to-like ratios.</div>
+  </div>
+
+  <div class="card tier-a post-card"
+    data-tweet="If you sold your Polymarket allocation too early:
+
+It's okay.
+We've all been there.
+You made a rational decision with the information you had.
+
+Also it's still not too late to reenter.
+Just saying."
+    data-image="Polymarket price chart showing the TGE or a token's post-launch price action. Screenshot from Polymarket.com showing real price movement."
+    data-why="Directly addresses the specific event in the dataset (Polymarket airdrop/TGE) that multiple users reference. The fake-reassurance structure that ends with 'just saying' is pure CT humor that drives replies and shares from people who relate.">
+    <div class="post-text">If you sold your Polymarket allocation too early:
+
+It's okay.
+We've all been there.
+You made a rational decision with the information you had.
+
+Also it's still not too late to reenter.
+Just saying.</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>82</strong></span>
+      <span class="score-pill">Hook <strong>80</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: Polymarket price chart showing the TGE or a token's post-launch price action. Screenshot from Polymarket.com showing real price movement.</div>
+    <div class="why-line">WHY: Directly addresses the specific event in the dataset (Polymarket airdrop/TGE) that multiple users reference. The fake-reassurance structure that ends with "just saying" is pure CT humor that drives replies and shares from people who relate.</div>
+  </div>
+
+  <div class="card tier-a post-card"
+    data-tweet="if you're up right now, you're either:
+- in profit and not sleeping from excitement
+- in loss and not sleeping from pain
+- building something no one knows about yet
+- all three
+
+which one are you?"
+    data-image="Screenshot of a trading terminal or portfolio tracker at night (dark mode, timestamp visible showing late hours). Any real nighttime trading setup screenshot."
+    data-why="Pattern lift from thisisseunn's 547-score post. The question closer turns every reader into a commenter. The 'all three' option is the CT-specific answer that gets the most replies. Works at any hour.">
+    <div class="post-text">if you're up right now, you're either:
+- in profit and not sleeping from excitement
+- in loss and not sleeping from pain
+- building something no one knows about yet
+- all three
+
+which one are you?</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>80</strong></span>
+      <span class="score-pill">Hook <strong>77</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: Screenshot of a trading terminal or portfolio tracker at night (dark mode, timestamp visible showing late hours). Any real nighttime trading setup screenshot.</div>
+    <div class="why-line">WHY: Pattern lift from thisisseunn's 547-score post. The question closer turns every reader into a commenter. The "all three" option is the CT-specific answer that gets the most replies. Works at any hour.</div>
+  </div>
+
+  <div class="card tier-a post-card"
+    data-tweet="people want to be rich AND anonymous
+
+most pick one
+
+the ones who figured out how to be both don't post about it"
+    data-image="Abstract screenshot of a wallet with a large balance but a completely blank/anonymous profile — no name, no PFP. Can be a MetaMask or Rabby wallet screenshot with address visible but info hidden."
+    data-why="Direct pattern lift from 1Cilineth's 1026-score post about 'skipping the rich part and going straight to anonymous.' The final line is a status signal that makes people tag others. Works as a standalone observation.">
+    <div class="post-text">people want to be rich AND anonymous
+
+most pick one
+
+the ones who figured out how to be both don't post about it</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>77</strong></span>
+      <span class="score-pill">Hook <strong>80</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: Abstract screenshot of a wallet with a large balance but a completely blank/anonymous profile — no name, no PFP. Can be a MetaMask or Rabby wallet screenshot with address visible but info hidden.</div>
+    <div class="why-line">WHY: Direct pattern lift from 1Cilineth's 1026-score post about "skipping the rich part and going straight to anonymous." The final line is a status signal that makes people tag others. Works as a standalone observation.</div>
+  </div>
+
+  <div class="card tier-a post-card"
+    data-tweet="content creation still pays off in CT
+
+what's stopping you is not the algorithm
+
+it's that you don't post consistently enough for the algorithm to have data on you
+
+fix that one thing"
+    data-image="Screenshot of an X analytics dashboard (your own) showing follower growth correlated with consistent posting frequency. Or a Typefully/Hypefury posting calendar showing a consistent schedule."
+    data-why="Directly from taiyoo's 667-score post pattern. Reframes the 'algorithm' complaint (prevalent in dataset via vikktorrrre's algorithm jokes) into an actionable fix. Drives replies from people asking 'how many posts' and shares from people who needed to hear it.">
+    <div class="post-text">content creation still pays off in CT
+
+what's stopping you is not the algorithm
+
+it's that you don't post consistently enough for the algorithm to have data on you
+
+fix that one thing</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>78</strong></span>
+      <span class="score-pill">Hook <strong>76</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: Screenshot of an X analytics dashboard showing follower growth correlated with consistent posting frequency. Or a Typefully/Hypefury posting calendar showing a consistent schedule.</div>
+    <div class="why-line">WHY: Directly from taiyoo's 667-score post pattern. Reframes the "algorithm" complaint (prevalent in dataset via vikktorrrre's algorithm jokes) into an actionable fix. Drives replies from people asking "how many posts" and shares from people who needed to hear it.</div>
+  </div>
+
+  <div class="card tier-a post-card"
+    data-tweet="i have no idea if this helps my bags
+
+but the chain keeps shipping
+
+so i keep holding
+
+hl :)"
+    data-image="Hyperliquid protocol metrics screenshot showing volume, TVL, or fee revenue from a Dune dashboard or the HyperLiquid stats page. Real on-chain data."
+    data-why="Direct riff on vikktorrrre's Hyperliquid post pattern. The casual low-conviction disclosure + ':)' is a CT authenticity signal. Short, honest, specific — three things that drive high engagement relative to follower count.">
+    <div class="post-text">i have no idea if this helps my bags
+
+but the chain keeps shipping
+
+so i keep holding
+
+hl :)</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>75</strong></span>
+      <span class="score-pill">Hook <strong>73</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: Hyperliquid protocol metrics screenshot showing volume, TVL, or fee revenue from a Dune dashboard or the HyperLiquid stats page. Real on-chain data.</div>
+    <div class="why-line">WHY: Direct riff on vikktorrrre's Hyperliquid post pattern. The casual low-conviction disclosure + ":)" is a CT authenticity signal. Short, honest, specific — three things that drive high engagement relative to follower count.</div>
+  </div>
+
+  <div class="card tier-a post-card"
+    data-tweet="one of the realest conversations i had this week was with a crypto OG who's been through 4 cycles.
+
+he said: 'i made millions twice and lost it twice. the third time i made it i didn't tell anyone. there will be no fourth time.'
+
+then we just sat there.
+
+some things hit too hard to respond to."
+    data-image="A blurred or atmospheric photo of two people talking — a bar, a conference hallway, a rooftop. No faces visible. Mood &gt; clarity."
+    data-why="Adapted from jeremyct's taxi driver post (60 score) — a smaller post that punches above its weight on saves and shares. The 'silent ending' is the share trigger. Crypto OG version makes it directly relevant to CT while keeping the emotional resonance.">
+    <div class="post-text">one of the realest conversations i had this week was with a crypto OG who's been through 4 cycles.
+
+he said: 'i made millions twice and lost it twice. the third time i made it i didn't tell anyone. there will be no fourth time.'
+
+then we just sat there.
+
+some things hit too hard to respond to.</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>76</strong></span>
+      <span class="score-pill">Hook <strong>79</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: A blurred or atmospheric photo of two people talking — a bar, a conference hallway, a rooftop. No faces visible. Mood &gt; clarity.</div>
+    <div class="why-line">WHY: Adapted from jeremyct's taxi driver post (60 score) — a smaller post that punches above its weight on saves and shares. The "silent ending" is the share trigger. Crypto OG version makes it directly relevant to CT while keeping the emotional resonance.</div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- TIER B -->
+  <div class="tier-header">
+    <div class="tier-header-left">
+      <span class="badge badge-b">TIER B</span>
+      <span class="tier-title">Experimental — 4 Posts</span>
+    </div>
+    <div class="tier-header-right">
+      <button class="bulk-btn" onclick="bulkCopy('tier-b','posts-images')">Copy All B Posts + Images</button>
+      <button class="bulk-btn" onclick="bulkCopy('tier-b','full')">Copy All B Full</button>
+    </div>
+  </div>
+
+  <div class="card tier-b post-card"
+    data-tweet="i tried to cancel my Binance subscription because the fees kept eating into margins
+
+the support rep asked why
+
+i said paying $50/month for a VIP tier with a $10k minimum trade requirement doesn't feel like a benefit anymore. it feels like paying monthly for the privilege of being a customer.
+
+she didn't really have a response."
+    data-image="Screenshot of exchange fee tier structure (Binance or Coinbase) showing the gap between VIP requirements and actual benefits. Real fee schedule page screenshot."
+    data-why="Adapted from jeremyct's health insurance post (250 score). The mundane corporate encounter format is extremely replicable and relatable. CT version with exchange fees. Lower virality ceiling but very high share rate among retail traders.">
+    <div class="post-text">i tried to cancel my Binance subscription because the fees kept eating into margins
+
+the support rep asked why
+
+i said paying $50/month for a VIP tier with a $10k minimum trade requirement doesn't feel like a benefit anymore. it feels like paying monthly for the privilege of being a customer.
+
+she didn't really have a response.</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>68</strong></span>
+      <span class="score-pill">Hook <strong>65</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: Screenshot of exchange fee tier structure (Binance or Coinbase) showing the gap between VIP requirements and actual benefits. Real fee schedule page screenshot.</div>
+    <div class="why-line">WHY: Adapted from jeremyct's health insurance post (250 score). The mundane corporate encounter format is extremely replicable and relatable. CT version with exchange fees. Lower virality ceiling but very high share rate among retail traders.</div>
+  </div>
+
+  <div class="card tier-b post-card"
+    data-tweet="typing in lowercase doesn't boost your credibility on X
+
+but people think it does
+
+and that belief changes how they write
+
+and that change in how they write actually does make them sound more credible
+
+so in a weird way it works"
+    data-image="Screenshot of a high-engagement lowercase tweet (from the public timeline, any high-engagement CT account) showing the engagement numbers to prove the point."
+    data-why="Direct riff on vikktorrrre's sarcastic algorithm post (532 score). Takes the joke and turns it into a real observation. Meta-commentary on CT behavior that insiders will appreciate. Lower ceiling, high share rate among writers and builders.">
+    <div class="post-text">typing in lowercase doesn't boost your credibility on X
+
+but people think it does
+
+and that belief changes how they write
+
+and that change in how they write actually does make them sound more credible
+
+so in a weird way it works</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>66</strong></span>
+      <span class="score-pill">Hook <strong>70</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: Screenshot of a high-engagement lowercase tweet from a public CT account showing the engagement numbers. Proves the post's own point.</div>
+    <div class="why-line">WHY: Direct riff on vikktorrrre's sarcastic algorithm post (532 score). Takes the joke and turns it into a real observation. Meta-commentary on CT behavior that insiders will appreciate. Lower ceiling, high share rate among writers and builders.</div>
+  </div>
+
+  <div class="card tier-b post-card"
+    data-tweet="the AI generated content flooding crypto twitter this year will end the concept of 'screenshot = proof' forever
+
+we are so not ready for what's coming
+
+trade accordingly"
+    data-image="Side-by-side comparison: a real wallet screenshot vs an obvious AI-generated fake wallet screenshot. Show the difference is now nearly zero. Use Midjourney/Grok generated fake as example."
+    data-why="Adapted from birdabo's 193-score AI content post. The 'we are so not ready' line is a CT-native alarm pattern. Adding 'trade accordingly' makes it actionable and crypto-specific, driving more replies.">
+    <div class="post-text">the AI generated content flooding crypto twitter this year will end the concept of 'screenshot = proof' forever
+
+we are so not ready for what's coming
+
+trade accordingly</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>64</strong></span>
+      <span class="score-pill">Hook <strong>72</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: Side-by-side of a real wallet balance screenshot vs a clearly AI-generated fake one — showing how similar they now look. Any AI image tool can generate the fake example.</div>
+    <div class="why-line">WHY: Adapted from birdabo's 193-score AI content post. The "we are so not ready" line is a CT-native alarm pattern. Adding "trade accordingly" makes it actionable and crypto-specific, driving more replies.</div>
+  </div>
+
+  <div class="card tier-b post-card"
+    data-tweet="me in january: '2026 is my year, I have a plan, I have a system'
+
+me on a saturday in may: another weekend is here, the charts are sideways, and i'm weirdly okay with it"
+    data-image="A meme image or personal photo of someone looking relaxed in front of a sideways chart. The contrast between the ambitious plan and the chill acceptance is the joke."
+    data-why="Direct adaptation of vikktorrrre's 352-score January post. Universal CT relatable content. Low controversy, high comment rate ('same bro'), good for algorithm warmth days when you need engagement without taking a real stance.">
+    <div class="post-text">me in january: '2026 is my year, I have a plan, I have a system'
+
+me on a saturday in may: another weekend is here, the charts are sideways, and i'm weirdly okay with it</div>
+    <div class="copy-toolbar">
+      <button class="copy-btn" onclick="copyText(this.closest('.post-card').dataset.tweet, this)">Copy Tweet</button>
+      <button class="copy-btn" onclick="copyTweetImage(this)">Copy Tweet + Image</button>
+    </div>
+    <div class="meta-row">
+      <span class="badge badge-real">REAL IMAGE</span>
+      <span class="score-pill">Virality <strong>62</strong></span>
+      <span class="score-pill">Hook <strong>68</strong></span>
+    </div>
+    <div class="img-real">📸 REAL IMAGE: A meme or personal photo — someone visibly relaxed (couch, coffee, weekend vibe) with a sideways chart on a screen in the background. The visual completes the joke.</div>
+    <div class="why-line">WHY: Direct adaptation of vikktorrrre's 352-score January post. Universal CT relatable content. Low controversy, high comment rate ("same bro"), good for algorithm warmth days.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ REPLIES ═══ -->
+<div id="replies" class="section">
+  <h2>Reply Posts</h2>
+
+  <div class="card reply-card">
+    <div class="post-text">there are traders in CT right now, just like everywhere else. the story is about basic risk management getting punished in a sideways market. what's your point — only people with 10k followers deserve to share their trades? 😂</div>
+    <div class="muted">Use on: Any reply thread where someone dismisses retail CT traders as irrelevant or unqualified</div>
+  </div>
+
+  <div class="card reply-card">
+    <div class="post-text">this is exactly what i meant when i said the system changed. the math was different for your parents' generation. it's not about effort. it's about which decade you started playing the game.</div>
+    <div class="muted">Use on: Generational wealth / housing / retirement threads where someone says "just work harder"</div>
+  </div>
+
+  <div class="card reply-card">
+    <div class="post-text">the fact that you're still here building after getting rugged is more signal than most people's polished portfolios. that's not cope. that's actual evidence of durability.</div>
+    <div class="muted">Use on: Threads where someone admits losses but is still building — validate and boost</div>
+  </div>
+
+  <div class="card reply-card">
+    <div class="post-text">Reddit is literally the most undervalued research tool in CT and nobody talks about it. the communities are massive, unfiltered, and the search is free. if you know how to use it you have a permanent edge on people who don't.</div>
+    <div class="muted">Use on: "Where do you get alpha?" or "what free tools do you actually use?" threads</div>
+  </div>
+
+  <div class="card reply-card">
+    <div class="post-text">ngl this might be the cleanest digital play i've seen explained in a thread. the 3 hours/week line did something to my brain. i need a minute.</div>
+    <div class="muted">Use on: Any thread where someone shares a passive income or acquisition strategy with specific numbers</div>
+  </div>
+
+  <div class="card reply-card">
+    <div class="post-text">the bro with $20 volume screaming about polymarket alpha is a permanent fixture of every TGE season and i respect the hustle even if the math doesn't add up 💀</div>
+    <div class="muted">Use on: Polymarket airdrop / TGE speculation threads — self-aware CT humor, low aggression</div>
+  </div>
+
+  <div class="card reply-card">
+    <div class="post-text">this is the first time i've seen someone explain model routing in a way that actually makes sense. most people just pick the shiniest new model and wonder why their costs are insane.</div>
+    <div class="muted">Use on: AI tools / Claude / model comparison threads where someone shows a smart workflow</div>
+  </div>
+
+  <div class="card reply-card">
+    <div class="post-text">seeing is believing was already fragile before AI. now it's gone. the only signal left is track record and you have to build that before you need it. which most accounts haven't.</div>
+    <div class="muted">Use on: AI-generated content / deepfake / screenshot fraud threads</div>
+  </div>
+
+  <div class="card reply-card">
+    <div class="post-text">the lowercase thing is actually a documented trust pattern in social writing. you're right that it works. the irony is that explaining why it works in a formal tweet kind of proves the point in reverse.</div>
+    <div class="muted">Use on: Meta threads about X writing style, algorithm hacks, credibility signals</div>
+  </div>
+
+  <div class="card reply-card">
+    <div class="post-text">the people who made it twice and lost it twice and made it a third time without telling anyone are the ones who figured out that the portfolio is the asset and the anonymity is the hedge. respect.</div>
+    <div class="muted">Use on: Any thread about CT OGs, generational wealth in crypto, or hiding wealth once you've made it</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ QT ANGLES ═══ -->
+<div id="qtangles" class="section">
+  <h2>Quote Tweet Angles</h2>
+
+  <div class="card qt-card">
+    <div class="post-text">the math here is undefeated. and the worst part? the people who most need to see this are the ones most invested in believing the current system is fair.</div>
+    <span class="angle-pill">System Expose Amplifier</span>
+  </div>
+
+  <div class="card qt-card">
+    <div class="post-text">screenshot this and send it to your most "crypto is a scam" friend. the scam comparison lands different when the alternative is doing the math the other way.</div>
+    <span class="angle-pill">Redirect the Skeptic</span>
+  </div>
+
+  <div class="card qt-card">
+    <div class="post-text">i've been in CT for 4 years and this is still one of the cleanest 5-hour-a-week plays I've seen explained in a single post. the portfolio approach changes everything.</div>
+    <span class="angle-pill">Credibility Boost on Lived Math</span>
+  </div>
+
+  <div class="card qt-card">
+    <div class="post-text">this is what "dem no dey gatekeep" actually looks like when someone applies it. free tools, real data, no paywall. save this thread.</div>
+    <span class="angle-pill">Resource Drop Amplifier</span>
+  </div>
+
+  <div class="card qt-card">
+    <div class="post-text">the leverage changed. four words. that's the entire economic story of the last 40 years in CT language. more useful than most macroeconomic threads.</div>
+    <span class="angle-pill">Generational Math Distillation</span>
+  </div>
+
+  <div class="card qt-card">
+    <div class="post-text">wallet recovery using AI is going to be a whole industry within 2 years. people are sitting on billions in "lost" crypto. this is early signal.</div>
+    <span class="angle-pill">AI Story Win — Forward Projection</span>
+  </div>
+
+  <div class="card qt-card">
+    <div class="post-text">this is the most honest 3-sentence CT post i've read this week. the last line is doing all the work. "breathe again" is what everyone on this app is actually trying to do.</div>
+    <span class="angle-pill">Frustration Bulletin Validation</span>
+  </div>
+
+  <div class="card qt-card">
+    <div class="post-text">the "which one are you" question is doing something technically correct here — it turns every reader into a commenter. that's why it gets 200 replies on 50 likes. structure matters more than content.</div>
+    <span class="angle-pill">Meta-Commentary on Engagement Mechanics</span>
+  </div>
+
+  <div class="card qt-card">
+    <div class="post-text">this is the most underrated growth advice in CT right now. algorithm data. you literally can't get recommended if the algo has no data on you. consistency before quality.</div>
+    <span class="angle-pill">Content Strategy Amplifier</span>
+  </div>
+
+  <div class="card qt-card">
+    <div class="post-text">the "i contain multitudes" energy is the healthiest relationship with crypto i've seen described in 3 lines. family, love, also checked charts. that's not dysfunction. that's just being human in 2026.</div>
+    <span class="angle-pill">Self-Roast Cultural Defense</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ EXTRACTION ═══ -->
+<div id="extraction" class="section">
+  <h2>Phase 1 — Deep Pattern Extraction</h2>
+
+  <div class="card">
+    <h3>1. Exact Hook Structures</h3>
+    <div class="hook-block">Paying [SPECIFIC_AMOUNT] into [FAMILIAR_SYSTEM] gets you [SMALL_OUTCOME]. If you [ALTERNATIVE_ACTION], you'd have [LARGE_OUTCOME]. About [MULTIPLIER] times more. [SYSTEM] is a scam.</div>
+    <div class="hook-block">secret [CATEGORY] [DESCRIPTOR] you'll probably love 👀 → [URL] : [ONE_LINE_VALUE] → [URL] : [ONE_LINE_VALUE] you're welcome, as always 🥰</div>
+    <div class="hook-block">Met a [ANONYMOUS_PERSON] making [INCOME]/year. With one of the cleanest [CATEGORY] plays I've ever heard of. [STEP_BY_STEP_BREAKDOWN] Spends [LOW_HOURS] a week on the whole portfolio. [SINGLE_WORD_CLOSE].</div>
+    <div class="hook-block">your [OLDER_GEN] [PAST_ACHIEVEMENT] on [SINGLE_RESOURCE]. now people with [CURRENT_RESOURCES] struggle to [SAME_GOAL]. that's not [INDIVIDUAL_FAULT]. [SYSTEMIC_CLOSE].</div>
+    <div class="hook-block">🚨[ATTENTION_CLAIM]. a [PERSON] [PROBLEM_SETUP]. [DURATION] and [FAILED_ATTEMPTS]. nothing worked. this week [PERSON] [AI_CHAIN_OF_ACTIONS]. [ABSURD_DETAIL]. anything is possible now.</div>
+    <div class="hook-block">okay so i'm [AGE] right. [LIST_OF_RESPONSIBILITIES_AND_FLAWS]. still [CONTRADICTORY_POSITIVE]. still here. [UNEXPECTED_STATUS] somehow. people ask me "[DISMISSIVE_QUESTION]". i don't even have time to think about that.</div>
+    <div class="hook-block">if you're up right now, you're either [OPTION_1] / [OPTION_2] / [OPTION_3] / all three. which one are you?</div>
+  </div>
+
+  <div class="card">
+    <h3>2. Emotional Fingerprint</h3>
+    <p class="muted" style="margin-bottom:10px;"><strong style="color:#ffc400;">Dominant emotion:</strong> Controlled financial rage — not despair, not panic, but the quiet fury of someone who did everything right and still got squeezed.</p>
+    <p class="muted" style="margin-bottom:10px;"><strong style="color:#00e5ff;">What drives replies:</strong> Controversy and identity validation. Posts that say "the system is rigged" get replies from both believers (agreement) and defenders (argument). Both groups push engagement.</p>
+    <p class="muted" style="margin-bottom:10px;"><strong style="color:#00e5ff;">What drives shares:</strong> Concrete numbers and actionable discoveries. Posts with specific dollar amounts, multipliers, or tool links get bookmarked and shared because they're useful beyond the moment.</p>
+    <p class="muted"><strong style="color:#00e5ff;">What drives likes:</strong> Vulnerability + humor. The self-roast format with absurd contradiction ("still here, somehow") accumulates likes because people recognize themselves without having to comment.</p>
+  </div>
+
+  <div class="card">
+    <h3>3. Language Patterns</h3>
+    <div style="margin-bottom:12px;">
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">scam</span>
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">X times more</span>
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">you're welcome</span>
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">dem no dey gatekeep</span>
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">inspiring</span>
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">somehow</span>
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">i contain multitudes</span>
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">still here</span>
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">anything is possible now</span>
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">playing defense</span>
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">breathing room</span>
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">that's not laziness</span>
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">met a guy</span>
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">5 hours a week</span>
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">nothing worked</span>
+      <span class="pill-cyan" style="display:inline-block;padding:3px 10px;margin:3px;border:1px solid #004d5a;color:#00e5ff;font-size:12px;">straight up rewrote</span>
+    </div>
+    <p class="muted"><strong style="color:#ffc400;">Cross-language signal:</strong> Lowercase throughout signals authenticity and non-performance. ALL CAPS used only for cost items to function as a visual scroll-stopper. Pidgin English (Nigerian Pidgin: "na", "dem", "sabi") appears in top posts and functions as in-group trust marker.</p>
+  </div>
+
+  <div class="card">
+    <h3>4. Narrative Frames That Perform</h3>
+    <ul style="list-style:none;padding:0;">
+      <li class="muted" style="margin-bottom:8px;">→ <strong style="color:#ffc400;">The Institutional Math Flip</strong> — Take a familiar institution (Social Security, pensions, health insurance), run the alternative math, conclude with a verdict. Works because it's verifiable.</li>
+      <li class="muted" style="margin-bottom:8px;">→ <strong style="color:#ffc400;">The Anonymous Operator Story</strong> — Someone (no name, no platform) doing something with an unconventional asset acquisition strategy. The anonymity makes it feel insider. The specific hours make it feel real.</li>
+      <li class="muted" style="margin-bottom:8px;">→ <strong style="color:#ffc400;">The Gatekept List</strong> — Resources framed as hidden or restricted. Each item has a one-sentence specific payoff. Closes with social gift language. Save rate is extremely high.</li>
+      <li class="muted" style="margin-bottom:8px;">→ <strong style="color:#ffc400;">The Two-Generation Squeeze</strong> — Past vs present economic reality in 2 sentences. Deflects blame from the individual onto the system. Works because it's an identity statement and a political statement simultaneously.</li>
+      <li class="muted" style="margin-bottom:8px;">→ <strong style="color:#ffc400;">The Honest Self-Inventory</strong> — A list of contradictions (responsibilities + bad habits + still going). No resolution, no lesson. The resilience is implicit. Drives comments from people who see themselves.</li>
+      <li class="muted">→ <strong style="color:#ffc400;">The AI Recovery Narrative</strong> — Lost asset + failed attempts + AI solution + absurd specific detail + dollar value recovered. The absurd detail (weird password, old file) is the share trigger.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>5. Reply and Share Triggers</h3>
+    <p class="muted" style="margin-bottom:8px;"><strong style="color:#00e5ff;">Reply triggers:</strong></p>
+    <ul style="list-style:none;padding:0;margin-bottom:14px;">
+      <li class="muted" style="margin-bottom:4px;">→ Controversial systemic claims ("X is a scam") — creates defender replies that boost reach</li>
+      <li class="muted" style="margin-bottom:4px;">→ Question closers ("which one are you?") — forces participation</li>
+      <li class="muted" style="margin-bottom:4px;">→ Specific dollar amounts — people reply to dispute or validate</li>
+      <li class="muted" style="margin-bottom:4px;">→ Self-roast format — people reply to say "same" or "you ok?"</li>
+    </ul>
+    <p class="muted" style="margin-bottom:8px;"><strong style="color:#00e5ff;">Share triggers:</strong></p>
+    <ul style="list-style:none;padding:0;">
+      <li class="muted" style="margin-bottom:4px;">→ Tool lists with real URLs — saved to share later</li>
+      <li class="muted" style="margin-bottom:4px;">→ Economic data with source-citable numbers — shared as receipts</li>
+      <li class="muted" style="margin-bottom:4px;">→ "Silent ending" narrative posts — screenshot-shared because the ending hits without resolution</li>
+      <li class="muted" style="margin-bottom:4px;">→ AI success stories with recovery amounts — shared as proof of what's possible</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>6. Cross-Post Patterns — Highest Confidence Signals</h3>
+    <ul style="list-style:none;padding:0;">
+      <li class="muted" style="margin-bottom:8px;">→ <strong style="color:#ffc400;">Lowercase + no punctuation on key posts</strong> — appears across 7 of the top 15 posts. Not a coincidence. The style signals authenticity over performance.</li>
+      <li class="muted" style="margin-bottom:8px;">→ <strong style="color:#ffc400;">Specific hours per week</strong> — "5 hours a week", "3 hours a week" appears as a credibility anchor in the top business/operator posts. The lower the number, the more viral.</li>
+      <li class="muted" style="margin-bottom:8px;">→ <strong style="color:#ffc400;">Single-word emotional closer</strong> — "Inspiring", "Respect", "Mad" as the final word of a long setup post. Appears in 4 of the top 10. Functions as a mic drop that reframes the entire post.</li>
+      <li class="muted" style="margin-bottom:8px;">→ <strong style="color:#ffc400;">Polymarket as shared context</strong> — Referenced by 4+ users in the dataset. It's the current shared event that works as a CT compass point for jokes, QTs, and replies.</li>
+      <li class="muted" style="margin-bottom:8px;">→ <strong style="color:#ffc400;">"Something changed" deflection</strong> — Systemic blame instead of individual blame appears across both the top tweet and multiple reply posts. Consistently outperforms personal-responsibility framing.</li>
+      <li class="muted">→ <strong style="color:#ffc400;">Reddit as underdog alpha source</strong> — Two separate creators reference Reddit as a "money glitch" that CT ignores. High confidence signal that Reddit arbitrage content will outperform in this audience.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function copyTweetImage(btn) {
+  const card = btn.closest('.post-card');
+  const tweet = card.dataset.tweet;
+  const image = card.dataset.image;
+  const text = tweet + '\n\nIMAGE: ' + image;
+  copyText(text, btn);
+}
+
+function bulkCopy(tier, mode) {
+  const btn = event.target;
+  const section = document.getElementById('postqueue');
+  const cards = section.querySelectorAll('.card.' + tier + '.post-card');
+  let parts = [];
+  cards.forEach(card => {
+    const tweet = card.dataset.tweet;
+    const image = card.dataset.image;
+    const why = card.dataset.why;
+    if (mode === 'posts-images') {
+      parts.push(tweet + '\n\nIMAGE: ' + image);
+    } else {
+      parts.push(tweet + '\n\nIMAGE: ' + image + '\n\nWHY: ' + why);
+    }
+  });
+  const text = parts.join('\n\n---\n\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>
